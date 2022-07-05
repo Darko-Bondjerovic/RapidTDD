@@ -1,7 +1,8 @@
 .vs/
 WinFormApp/bin/
 WinFormApp/obj/
+WinFormApp/RefsDir/
 packages/
-RefsDir/
+
 
 
