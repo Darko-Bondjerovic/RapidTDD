@@ -348,7 +348,7 @@ namespace WinFormApp
             newClass = newClass.AddMembers(GenerateMethod())
                 .NormalizeWhitespace();
 
-            var newClassStr = newClass.ToFullString().Replace(BODYLINE, "//");
+            var newClassStr = "using System;\n\n" + newClass.ToFullString().Replace(BODYLINE, "//");
 
             if (DialogResult.No == MessageBox.Show(
                $"Generate class in new file?\n\n{newClassStr}", "Confirm",
