@@ -6,16 +6,11 @@ public class Frame : List<int>
 {
     int num;
 
-    public Action<int> WhenAddPin = (p) => { };
+    public Action<int> WhenAddPin = (pin) => { };
 
     public Frame(int num)
     {
         this.num = num;
-    }
-
-    public override string ToString()
-    {
-        return $"{num}.[{string.Join(",", this)}]";
     }
 
     public void AddPin(int pin)
@@ -27,22 +22,27 @@ public class Frame : List<int>
         WhenAddPin(pin);
     }
 
+    public override string ToString()
+    {
+        return $"{num}.[{string.Join(",", this)}]";
+    }
+
     public bool IsDone()
     {
         return (this.Count == 2 || IsStrike()) && (this.num != 10);
+    }
+
+    public Frame MakeNext()
+    {
+        var result = new Frame(num + 1);
+        result.WhenAddPin = AddToPrevious;
+        return result;
     }
 
     public void AddToPrevious(int pin)
     {
         if (IsSpare() || IsStrike())
             this.AddPin(pin);
-    }
-
-    public Frame MakeNext()
-    {
-        var frame = new Frame(num + 1);
-        frame.WhenAddPin = AddToPrevious;
-        return frame;
     }
 
     public bool IsSpare()
