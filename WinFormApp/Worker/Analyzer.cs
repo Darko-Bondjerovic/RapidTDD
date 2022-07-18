@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace WinFormApp
+namespace WinFormApp 
 {
     public class ClassData
     {
