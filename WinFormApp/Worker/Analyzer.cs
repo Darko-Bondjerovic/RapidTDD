@@ -384,6 +384,21 @@ namespace WinFormApp
             return result;
         }
 
+        public static ITypeSymbol GetType(ISymbol symbol)
+        {
+            if (symbol is IFieldSymbol)
+            {
+                return ((IFieldSymbol)symbol).Type;
+            }
+
+            if (symbol is ILocalSymbol)
+            {
+                return ((ILocalSymbol)symbol).Type;
+            }
+
+            return null;
+        }
+
         public async Task<ClassData> AnalyzeDoc(Document doc, 
                int position, IEnumerable<Document> allDocs)
         {
@@ -391,10 +406,11 @@ namespace WinFormApp
 
             // var m = new MyClass();
             // m.RunMethod(); <--- this is selected.
+
             if (MethodName != "" && IsStaticMethod)
-            {                
+            {
                 var symbol = await SymbolFinder
-                    .FindSymbolAtPositionAsync(doc, 
+                    .FindSymbolAtPositionAsync(doc,
                     position + StatClassLoc);
 
                 if (symbol != null)
@@ -403,9 +419,10 @@ namespace WinFormApp
                     {
                         //var parent = symbol.ContainingType.Name; // <-- Program
 
-                        ITypeSymbol type = ((ILocalSymbol)symbol).Type;
-                        if (type != null)
-                        {
+                        ITypeSymbol type = GetType(symbol);
+                        
+                        if (type != null && type.Name != "")
+                        { 
                             ClassName = type.Name;
                             IsStaticMethod = false;
                         }
