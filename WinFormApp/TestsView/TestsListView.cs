@@ -77,11 +77,15 @@ namespace DiffNamespace
         private string SelectedTestName = "";        
         internal bool RenameTests = false;
         
-        public Action DoUpdateUI = () => { };     
+        public Action DoUpdateUI = () => { };          
         
         public TestsListView() : base()
         {
             this.Columns[0].Width = 600;
+        }
+        public bool HaveTests()
+        {
+            return this.tests.Count > 0;
         }
 
         protected override void ListViewDrawItem(object sender, DrawListViewItemEventArgs e)

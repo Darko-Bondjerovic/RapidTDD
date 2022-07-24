@@ -29,7 +29,9 @@ namespace WinFormApp
 
         Worker worker = new Worker();
         private bool run_in_progress = false;
-        private bool HasCompileErorrs = false;        
+        private bool HasCompileErorrs = false;
+
+        
 
         public MainForm()
         {
@@ -60,18 +62,14 @@ namespace WinFormApp
             MakeOutputForm();
             MakeErrorForm();
 
-            MakeNewEditor().InsertEmptyMain();
-
-            SplashScreen.UdpateStatusText("Load compiler...");
-            ExecuteCode();
-
-            SplashScreen.UdpateStatusText("Load completions...");
-            _ = worker.ReadCompletionItems(editors[0].TabName, "word").Result;
-
-            SplashScreen.UdpateStatusText("Done!");
-            editors[0].fctb.Text = "";
-
-
+                // Load code, compile, run. load completions:
+                MakeNewEditor().InsertEmptyMain();
+                SplashScreen.UdpateStatusText("Load compiler...");
+                ExecuteCode();
+                SplashScreen.UdpateStatusText("Load completions...");
+                _ = worker.ReadCompletionItems(editors[0].TabName, "word").Result;
+                SplashScreen.UdpateStatusText("Done!");
+                editors[0].fctb.Text = "";
 
             this.Show();
             SplashScreen.CloseSplashScreen();
@@ -422,6 +420,14 @@ namespace WinFormApp
             try
             {               
                 var response = ExecuteSource(GetSources());
+
+                if (response.Contains(Worker.TargetOfInvocation))
+                {
+                    MessageBox.Show(response);
+                    SetRunInProgress(false);
+                    return;
+                }    
+
                 ShowResponseToUI(response, HasCompileErorrs);
                 DisplayErrors(null);
             }

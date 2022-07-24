@@ -225,6 +225,9 @@ namespace DiffNamespace
 
         internal void SaveTests()
         {
+            if (!TestsListView.HaveTests())
+                return;
+
             if (TestsFileName == "")
             {
                 SaveFileDialog saveDlg = CreateSaveDialog();

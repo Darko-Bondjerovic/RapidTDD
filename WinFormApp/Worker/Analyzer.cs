@@ -5,13 +5,13 @@ using Microsoft.CodeAnalysis.FindSymbols;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text; 
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace WinFormApp 
+namespace WinFormApp
 {
     public class ClassData
     {

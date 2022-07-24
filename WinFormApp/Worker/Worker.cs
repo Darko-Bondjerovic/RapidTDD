@@ -48,6 +48,8 @@ namespace WinFormApp
 
         //private readonly CompositionHost _compositionContext;
 
+        public static string TargetOfInvocation = "Exception has been thrown by the target of an invocation";
+
         public ReferenceList References { get; } = new ReferenceList();
 
         private readonly MefHostServices _host;
@@ -375,7 +377,12 @@ namespace WinFormApp
                 }
                 catch (Exception e)
                 {
-                    return "FAIL: \n" + e.Message;
+                    var result = "FAIL: \n" + e.Message;
+
+                    if (e.Message.Contains(TargetOfInvocation))
+                       result += "\n\n" + e.InnerException.Message;
+
+                    return result;
                 }
             });
 
