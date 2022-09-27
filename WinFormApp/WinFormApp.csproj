@@ -153,6 +153,12 @@
     <Compile Include="ErrorForm.Designer.cs">
       <DependentUpon>ErrorForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="FMsgBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FMsgBox.designer.cs">
+      <DependentUpon>FMsgBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="InputBox.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -214,6 +220,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ErrorForm.resx">
       <DependentUpon>ErrorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FMsgBox.resx">
+      <DependentUpon>FMsgBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>

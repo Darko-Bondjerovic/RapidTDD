@@ -286,7 +286,7 @@ namespace WinFormApp
         {
             if (editors.Count == 0)
             {
-                ShowMessage("Nothing to save...");
+                ShowInfoMsgBox("Nothing to save...");
                 return;
             }
 
@@ -295,7 +295,7 @@ namespace WinFormApp
                 curr.SaveFile(saveAs);
         }
 
-        private static void ShowMessage(string msg)
+        private static void ShowInfoMsgBox(string msg)
         {
             MessageBox.Show(msg);
         }
@@ -364,7 +364,7 @@ namespace WinFormApp
         {
             if (editors.Count == 0 || CurrentEditForm.FileName == null)
             {
-                ShowMessage("No file to reload...");
+                ShowInfoMsgBox("No file to reload...");
                 return;
             }
 
@@ -406,13 +406,13 @@ namespace WinFormApp
 
             if (editors.Count == 0)
             {
-                ShowMessage("Nothing to run, no source code...");
+                ShowInfoMsgBox("Nothing to run, no source code...");
                 return;
             }
 
             if (tstForm == null)
             {
-                ShowMessage("Tests view should be visible");
+                ShowInfoMsgBox("Tests view should be visible");
                 return;
             }
                         
@@ -423,7 +423,7 @@ namespace WinFormApp
 
                 if (response.Contains(Worker.TargetOfInvocation))
                 {
-                    MessageBox.Show(response);
+                    ShowInfoMsgBox(response);
                     SetRunInProgress(false);
                     return;
                 }    
@@ -541,7 +541,7 @@ namespace WinFormApp
         {
             if (editors.Count == 0)
             {
-                ShowMessage("Nothing to rename...");
+                ShowInfoMsgBox("Nothing to rename...");
                 return;
             }
 
@@ -554,7 +554,7 @@ namespace WinFormApp
             var word = edit.fctb.SelectedText;
             if (string.IsNullOrEmpty(word))
             {
-                ShowMessage("Select text/item to rename...");
+                ShowInfoMsgBox("Select text/item to rename...");
                 return;
             }
 
@@ -644,14 +644,14 @@ namespace WinFormApp
 
         private void generateMethodToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            GenerateMethod();
+            GenerateCode();
         }
 
-        public async void GenerateMethod()
+        public async void GenerateCode()
         { 
             if (editors.Count == 0)
             {
-                ShowMessage("Nothing to generate...");
+                ShowInfoMsgBox("Nothing to generate...");
                 return;
             }
 
@@ -662,7 +662,7 @@ namespace WinFormApp
             var input = edit.fctb.SelectedText;
             if (string.IsNullOrEmpty(input) || !input.Contains("("))
             {
-                ShowMessage($"Select some text with brackets: {input}()");
+                ShowInfoMsgBox($"Select some text with brackets: {input}()");
                 return;
             }
 

@@ -426,10 +426,7 @@ namespace WinFormApp
             }
 
             return result;
-        }
-
-
-         
+        }         
 
         internal async Task<List<DocInfo>> GenerateMethod(
             Analyzer ana, DocInfo info, int position)
@@ -442,9 +439,7 @@ namespace WinFormApp
                 return null;
 
             return UpdateSolution(ana, found);
-        }
-
-        
+        }        
 
         private List<DocInfo> UpdateSolution(Analyzer ana, ClassData cd)
         {
@@ -452,11 +447,10 @@ namespace WinFormApp
 
             var method = ana.GenerateMethod();
 
-            if (DialogResult.No == MessageBox.Show(
-               $"Generate method in class {cd.name}?" +
-               $"\n\n{method.NormalizeWhitespace()}",
-               "Generate method", MessageBoxButtons.YesNo))
-              return result;
+            if (!FMsgBox.Show(
+                   $"Generate method in class {cd.name}?" +
+                   $"\n\n{method.NormalizeWhitespace()}", true))
+                return result;
             
             var solution = workspace.CurrentSolution;
             var newCls = cd.syClass.AddMembers(method);

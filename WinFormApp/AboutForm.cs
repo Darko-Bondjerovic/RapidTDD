@@ -16,9 +16,7 @@ namespace WinFormApp
 
             var add =
 @"-------------------------------------------------------------------------
-
-Many thanks for Pavel Torgashov, 
-creator of FastColoredTextBox control!
+Many thanks for Pavel Torgashov, creator of FastColoredTextBox!
 	
 	The texbox control supports following hotkeys:
 
@@ -33,10 +31,10 @@ creator of FastColoredTextBox control!
 	* Ctrl+Wheel - zooming";
 
             label1.Text =
-                "Rapid TDD application\n\n" +
-                $"Version: {version} \n\n" +
-                " - compile, run c# code in memory and execute tests -\n\n" +                            
-                "Copyleft © 2022 by Darko Bondjerovic\n\n" + add;
+                "                       Rapid TDD application\n\n\n" +
+                "Compile, run c# code in memory and execute tests\n\n\n" +
+                "           Copyleft © 2022 by Darko Bondjerovic\n\n\n\n" + 
+                $"Version: {version} \n\n\n" + add;
         }
     }
 }

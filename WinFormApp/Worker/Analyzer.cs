@@ -350,9 +350,7 @@ namespace WinFormApp
 
             var newClassStr = "using System;\n\n" + newClass.ToFullString().Replace(BODYLINE, "//");
 
-            if (DialogResult.No == MessageBox.Show(
-               $"Generate class in new file?\n\n{newClassStr}", "Confirm",
-               MessageBoxButtons.YesNo))
+            if (!FMsgBox.Show($"Generate class in new file?\n\n{newClassStr}", true))
                 return "";
 
             return newClassStr;
