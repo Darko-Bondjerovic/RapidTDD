@@ -19,7 +19,7 @@ namespace WinFormApp
             }
 
             return base.ProcessCmdKey(ref msg, keyData);
-        }
+        }   
 
         public static bool Show(string message,
             bool question = false)

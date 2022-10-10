@@ -15,6 +15,9 @@ namespace DiffNamespace
 
             var tests = new List<TestItem>();
 
+            if (!response.Contains(TEST_KEYWORD))
+                return tests;
+
             var splited = response.Split(new string[] { TEST_KEYWORD },
                         StringSplitOptions.None);
 

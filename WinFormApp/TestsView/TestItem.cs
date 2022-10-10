@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 
 namespace DiffNamespace
 {
@@ -6,10 +6,30 @@ namespace DiffNamespace
     {
         private string _exp = "";
         private string _act = "";
+        
         public string name = "";
         public bool pass = false;
 
         public int count { get; set; } = 0;
+        
+        public TestItem Clone() 
+        {
+            return new TestItem {
+                name = this.name, 
+                exp = this.exp,
+                act = this.act,
+                pass = this.pass,
+                count = this.count
+            };
+        }
+        
+        public TestItem() { } 
+        
+        public TestItem(string name, string exp)
+        {
+            this.name = name;
+            this.exp = exp;
+        }
 
         public override string ToString()
         {
@@ -75,7 +95,7 @@ namespace DiffNamespace
         }
 
         internal void CheckIfPass()
-        {            
+        {
             this.pass = act.Equals(exp);
         }
 

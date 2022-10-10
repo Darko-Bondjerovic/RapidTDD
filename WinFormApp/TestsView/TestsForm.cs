@@ -16,10 +16,5 @@ namespace WinFormApp.TestsView
             tstPanel = new TestsPanel();
             this.Controls.Add(tstPanel);            
         }
-
-        internal void RenameTests(bool state)
-        {
-            tstPanel.TestsListView.RenameTests = state;
-        }
     }
 }

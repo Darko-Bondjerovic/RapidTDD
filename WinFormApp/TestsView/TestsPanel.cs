@@ -14,6 +14,7 @@ namespace DiffNamespace
         Button btnCopyAll = null;
         Button btnCopy = null;        
         Label lblSelectedTest = null;
+        CheckBox chkFilter = null;
 
         public TestsListView TestsListView = null;
         public ColoredTextBox ActualTextBox = null;
@@ -43,6 +44,15 @@ namespace DiffNamespace
             testsTopPanel.Controls.Add(lblSelectedTest);
             lblSelectedTest.Dock = DockStyle.Fill;
             lblSelectedTest.TextAlign = ContentAlignment.MiddleLeft;
+
+            chkFilter = new CheckBox();
+            chkFilter.ThreeState = true;
+            lblSelectedTest.Font = new Font("Consolas", 14F);
+            chkFilter.CheckState = CheckState.Unchecked;
+            chkFilter.Text = "all tests";
+            chkFilter.Dock = DockStyle.Right;
+            chkFilter.CheckStateChanged += ChkFilter_CheckStateChanged;
+            testsTopPanel.Controls.Add(chkFilter);
 
             btnCopyAll = new Button();
             btnCopyAll.Text = "Copy ALL";
@@ -116,6 +126,26 @@ namespace DiffNamespace
             ChangeOrientation(split1);
         }
 
+        private void ChkFilter_CheckStateChanged(object sender, EventArgs e)
+        {
+            switch (chkFilter.CheckState)
+            {
+                case CheckState.Checked:
+                    chkFilter.Text = "pass tests";
+                    break;
+
+                case CheckState.Unchecked:
+                    chkFilter.Text = "all tests";
+                    break;
+
+                case CheckState.Indeterminate:
+                    chkFilter.Text = "fail tests";                    
+                    break;
+            }
+
+            this.TestsListView.SetFilterState(chkFilter.CheckState);
+        }
+
         private void WhenPasteText(object sender, KeyEventArgs e)
         {
             if (e.Control && e.KeyCode == Keys.V)
@@ -135,7 +165,11 @@ namespace DiffNamespace
         {
             if (MessageBox.Show("Copy actual result into expected for all tests?", "Confirm",
                                MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
                 TestsListView.CopyAllActToExp();
+                TestsListView.DisplayInUI();
+
+            }
         }
 
         private void ListView1_SelectedIndexChanged(object sender, EventArgs e)
@@ -212,6 +246,8 @@ namespace DiffNamespace
                 tst.CopyActToExp();
 
             UpdateSelectedTestToUI();
+
+            TestsListView.DisplayInUI();
         }        
 
         private SaveFileDialog CreateSaveDialog()
@@ -260,18 +296,8 @@ namespace DiffNamespace
 
         internal void ShowResponseInUI(string response)
         {
-            var testsExists = response.Contains(Parser.TEST_KEYWORD);
-            
-            TestsListView.Enabled = testsExists;
-            ExpectedTextBox.ReadOnly = !testsExists;
-            btnCopy.Enabled = testsExists;
-            btnCopyAll.Enabled = testsExists;            
-
-            if (testsExists)
-            {
-                var tests = Parser.Find(response);
-                TestsListView.DisplayTests(tests);
-            }
+            var newTests = Parser.Find(response);
+            TestsListView.DisplayTests(newTests);
         }
         
         private TestItem GetSelectedTest()

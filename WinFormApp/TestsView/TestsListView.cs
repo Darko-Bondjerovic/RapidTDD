@@ -4,10 +4,10 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using System.Xml;
 
 namespace DiffNamespace
 {
-
     public class ColoredListView : ListView
     {
         protected Pen penBlue = new Pen(Color.Blue) { Width = 2 };
@@ -72,20 +72,21 @@ namespace DiffNamespace
 
     public class TestsListView : ColoredListView
     { 
-        private List<TestItem> tests = new List<TestItem>();
+        private List<TestItem> currTests = new List<TestItem>();
         
         private string SelectedTestName = "";        
-        internal bool RenameTests = false;
         
-        public Action DoUpdateUI = () => { };          
+        public Action DoUpdateUI = () => { };
         
+        private CheckState state = CheckState.Unchecked; // all tests
+
         public TestsListView() : base()
         {
             this.Columns[0].Width = 600;
         }
         public bool HaveTests()
         {
-            return this.tests.Count > 0;
+            return this.currTests.Count > 0;
         }
 
         protected override void ListViewDrawItem(object sender, DrawListViewItemEventArgs e)
@@ -132,110 +133,73 @@ namespace DiffNamespace
         internal void DisplayTests(List<TestItem> newTests)
         {
             SaveSelIndx();
-
-            if (RenameTests)
-                DoRenameTests(newTests);
-            else
-                UpdateTests(newTests);
-
+            UpdateTests(newTests);
             RestoreSelIndx(); 
             DoUpdateUI();
-        }
-
-        private void DoRenameTests(List<TestItem> newTests)
-        {
-            for (int i = 0; i < newTests.Count(); i++)
-            {
-                if (i < tests.Count())
-                {
-                    var newName = newTests[i].name;
-                    tests[i].name = newName;
-                    Items[i].Text = newName;
-                }
-            }
-        }
+        }        
 
         private void UpdateTests(List<TestItem> newTests)
         {
             // try to awoid Items.Clear() - scrollbar jump like crazy! :(
 
-            //var update = newTests.Intersect(tests).ToList();
-            //before delete anything, update newTests with old exp.
-            foreach (var n in newTests)
-            {
-                var o = tests
-                    .Where(x => x.name.Equals(n.name))
-                    .FirstOrDefault();
+            var upd = new UpdateExp(currTests, newTests);
 
-                if (o != null)
-                {
-                    if (n.exp == "")
-                        n.exp = o.exp;
-                }
+            upd.Find(true);
+
+            // do we have some different tests to rename or delete?
+            if (upd.HaveDiffs())
+            {
+                var frm = new UpdateDlg(upd);                
+                if (frm.ShowDialog() != DialogResult.OK)                    
+                    return; // cancel, don't change anything
             }
 
-            var forDelete = tests.Except(newTests).ToList();
+            upd.PrevExpToNew();
 
-            if (forDelete.Count() > 0)
+            currTests = newTests;
+
+            DisplayInUI();
+        }        
+
+        public void DisplayInUI()
+        {
+            var indx = 0;
+            foreach (TestItem test in currTests)
             {
-                var lst = forDelete.Select(x => x.name).ToList();
-                var str = string.Join("\n", lst);
-                if (DialogResult.No == MessageBox.Show(
-                    $"Delete tests:\n{str}?",                    
-                    "Confirm", MessageBoxButtons.YesNo))
-                   return;
-
-                for(int i=Items.Count-1; i >= 0; i--)
+                if (state != CheckState.Unchecked) // != all tests
                 {
-                    if (lst.Contains(Items[i].Text))
-                        Items.RemoveAt(i);
+                    if ((test.pass && state == CheckState.Indeterminate)
+                        || (!test.pass && state == CheckState.Checked))
+                        continue;
                 }
 
-                tests.RemoveAll(x => forDelete.Contains(x));
-            }            
-
-            for (int i = 0; i < newTests.Count(); i++)
-            {
-                var newItem = MakeItem(newTests[i]);
-
-                if (i < tests.Count())
+                if (indx < this.Items.Count)
                 {
-                    var indx = tests.IndexOf(newTests[i]);
-
-                    if (indx == -1)
-                    {
-                        tests.Insert(i, newTests[i]);
-                        Items.Insert(i, newItem);
-                    }
-                    else
-                    {
-                        if (indx == i)
-                        {
-                            Items[indx].Tag = newTests[i];
-                        }
-                        else
-                        {
-                            tests.RemoveAt(indx);
-                            tests.Insert(i, newTests[i]);
-
-                            Items.RemoveAt(indx);
-                            Items.Insert(i, newItem);
-                        }
-                    }
+                    Items[indx].Text = test.name;
+                    Items[indx].Tag = test;                    
                 }
                 else
-                {                    
-                    Items.Add(newItem);          
+                {
+                    Items.Add(MakeItem(test));
                 }
+
+                indx++;
             }
 
-            tests = newTests;
+            for (int i = Items.Count-1; i >= indx; i--)
+                Items.RemoveAt(i);
+        }
+
+        internal void SetFilterState(CheckState state)
+        {
+            this.state = state;
+            DisplayInUI();
         }
 
         internal string Progress()
         {
-            return $"[{tests.Count(x => x.pass == true)}"+
-                $"/{tests.Count()}] ";
+            return $"[{currTests.Count(x => x.pass == true)}"+
+                $"/{currTests.Count()}] ";
         }
 
         private void SaveSelIndx()
@@ -248,7 +212,7 @@ namespace DiffNamespace
             if (SelectedItems.Count > 0)
             {
                 ListViewItem item = (ListViewItem)SelectedItems[0];
-                SelectedTestName = ((TestItem)item.Tag).name;                
+                SelectedTestName = item.Text;              
             }
         }
         private void RestoreSelIndx()
@@ -256,8 +220,11 @@ namespace DiffNamespace
             if (Items.Count == 0)
                 return;
 
-            var test = tests.FirstOrDefault(o => o.name.Equals(SelectedTestName));
-            var indx = test == null ? 0 : tests.IndexOf(test);
+            var indx = this.FindItemWithText(SelectedTestName).Index;
+
+            // try to select first item in list
+            if (indx == -1 && Items.Count > 0)
+                indx = 0;
 
             Items[indx].Selected = true;
             
@@ -272,7 +239,7 @@ namespace DiffNamespace
 
         internal void CopyAllActToExp()
         {
-            foreach (var t in tests)
+            foreach (var t in currTests)
                 t.CopyActToExp();
 
             DoUpdateUI();
@@ -282,7 +249,7 @@ namespace DiffNamespace
         {
             var xdoc = new XDocument(
                 new XElement("Tests",
-                    tests.Select(o =>
+                    currTests.Select(o =>
                         new XElement("TestItem",
                             new XElement("name", o.name),
                             //new XElement("pass", x.pass),
@@ -307,7 +274,7 @@ namespace DiffNamespace
                         exp = e.Element("exp").Value
                     }).ToList();
 
-            tests.Clear(); // upload all new tests
+            currTests.Clear(); // upload all new tests
             DisplayTests(newTests);
         }
     }

@@ -479,6 +479,8 @@ namespace WinFormApp
 
         private void ShowResponseToUI(string response, bool err)
         {
+            if (err) return;
+
             if (tstForm != null)
                 tstForm.tstPanel.ShowResponseInUI(response);
 
@@ -618,22 +620,6 @@ namespace WinFormApp
         {
             if (tstForm != null)
                 tstForm.tstPanel.SaveTestsAs();
-        }
-
-        private void renameTestsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (tstForm == null)
-                return;
-
-            tstForm.RenameTests(true);
-            try
-            {
-                ExecuteCode();
-            }
-            finally
-            {
-                tstForm.RenameTests(false);
-            }
         }
 
         private void insertTestsCodeToolStripMenuItem_Click(object sender, EventArgs e)
