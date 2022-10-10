@@ -220,13 +220,17 @@ namespace DiffNamespace
             if (Items.Count == 0)
                 return;
 
-            var indx = this.FindItemWithText(SelectedTestName).Index;
+            var indx = -1;
+            var item = this.FindItemWithText(SelectedTestName);
+            if (item != null)
+                indx = item.Index;
 
             // try to select first item in list
             if (indx == -1 && Items.Count > 0)
                 indx = 0;
 
-            Items[indx].Selected = true;
+            if (indx < Items.Count)
+                Items[indx].Selected = true;
             
             // text editor will lose focus with this call:
             //this.Select();
