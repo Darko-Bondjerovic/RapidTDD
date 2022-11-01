@@ -175,6 +175,20 @@ namespace DiffNamespace
                 ⏎ U+23CE RETURN SYMBOL
                 ↲ U+21B2 DOWNWARDS ARROW WITH TIP LEFTWARDS
                 ↩ U+21A9 LEFTWARDS ARROW WITH HOOK
+                ○ - alt 9
+                ◙ - alt 10
+                ⧉
+
+                https://www.compart.com/en/unicode/U+2610  ☐ 
+                https://www.compart.com/en/unicode/U+2612  ☒ 
+            
+                U+2611 ☑
+
+                👈 U+1F448
+                🔙 U+1F519
+                
+                ◉ ◎ eye
+                
             */
 
             txt = txt.Replace("\r", "");

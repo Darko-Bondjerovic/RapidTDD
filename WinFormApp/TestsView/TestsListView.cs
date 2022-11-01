@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml;
+using System.Runtime.InteropServices;
 
 namespace DiffNamespace
 {
@@ -21,7 +22,7 @@ namespace DiffNamespace
             this.ListViewItemSorter = null;
 
             this.DoubleBuffered = true;
-            this.Font = new Font("Consolas", 16);
+            this.Font = new Font("Consolas", 14);
 
             this.FullRowSelect = true;
 
@@ -30,8 +31,10 @@ namespace DiffNamespace
             HeaderStyle = ColumnHeaderStyle.None;
             this.MultiSelect = false;
 
+            this.GridLines = false;
             this.OwnerDraw = true;
             this.DrawItem += ListViewDrawItem;
+            //this.DrawColumnHeader += ListViewDrawColumnHeader;            
 
             this.BackgroundImage = backImage;
             this.BackgroundImageTiled = true;
@@ -40,6 +43,38 @@ namespace DiffNamespace
             //this.BackColor = ColoredTextBox.DARK_COLOR;
 
             UpdateBackground();
+        }
+
+        //void ListViewDrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
+        //{
+        //    // Not interested in changing the way columns are drawn - this works fine
+        //    //e.DrawDefault = true;
+        //    //e.DrawBackground();
+
+        //    e.Graphics.FillRectangle(Brushes.LightGreen, e.Bounds);
+        //    e.DrawText();
+
+        //}
+
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool ShowScrollBar(IntPtr hWnd, int wBar, bool bShow);
+        protected override void WndProc(ref System.Windows.Forms.Message m)
+        {
+            //private enum ScrollBarDirection
+            //{
+            //    SB_HORZ = 0,
+            //    SB_VERT = 1,
+            //    SB_CTL = 2,
+            //    SB_BOTH = 3
+            //}
+
+            // Call to unmanaged WinAPI:
+            //ShowScrollBar(this.Handle, (int)ScrollBarDirection.SB_HORZ, false);
+            
+			ShowScrollBar(this.Handle, 0, false);
+            base.WndProc(ref m);
         }
 
         protected virtual void ListViewDrawItem(object sender, DrawListViewItemEventArgs e)
@@ -71,7 +106,7 @@ namespace DiffNamespace
     }
 
     public class TestsListView : ColoredListView
-    { 
+    {
         private List<TestItem> currTests = new List<TestItem>();
         
         private string SelectedTestName = "";        
@@ -80,10 +115,11 @@ namespace DiffNamespace
         
         private CheckState state = CheckState.Unchecked; // all tests
 
-        public TestsListView() : base()
-        {
-            this.Columns[0].Width = 600;
-        }
+        //public TestsListView() : base()
+        //{
+        //    this.Columns[0].Width = 600;
+        //}
+
         public bool HaveTests()
         {
             return this.currTests.Count > 0;
@@ -120,7 +156,7 @@ namespace DiffNamespace
                 }
             }
 
-            e.DrawBackground();
+            e.DrawBackground();                        
             e.DrawText();            
 
             if (!Enabled)
@@ -135,12 +171,13 @@ namespace DiffNamespace
             SaveSelIndx();
             UpdateTests(newTests);
             RestoreSelIndx(); 
+
             DoUpdateUI();
         }        
 
         private void UpdateTests(List<TestItem> newTests)
         {
-            // try to awoid Items.Clear() - scrollbar jump like crazy! :(
+            // try to avoid Items.Clear() - scrollbar jump like crazy! :(
 
             var upd = new UpdateExp(currTests, newTests);
 
@@ -158,8 +195,8 @@ namespace DiffNamespace
 
             currTests = newTests;
 
-            DisplayInUI();
-        }        
+            DisplayInUI();            
+        }       
 
         public void DisplayInUI()
         {
@@ -233,7 +270,7 @@ namespace DiffNamespace
                 Items[indx].Selected = true;
             
             // text editor will lose focus with this call:
-            //this.Select();
+            // this.Select();
         }
 
         private ListViewItem MakeItem(TestItem newTest)

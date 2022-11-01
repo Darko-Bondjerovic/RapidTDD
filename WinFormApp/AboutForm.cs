@@ -8,6 +8,8 @@ namespace WinFormApp
         public AboutForm()
         {
             InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.ShowInTaskbar = false;
         }
 
         private void AboutForm_Load(object sender, System.EventArgs e)

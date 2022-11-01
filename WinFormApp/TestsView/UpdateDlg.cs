@@ -13,7 +13,8 @@ namespace DiffNamespace
         public UpdateDlg(UpdateExp upd)
         {
             InitializeComponent();
-            this.CenterToScreen();
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.ShowInTaskbar = false;
 
             this.upd = upd;
 

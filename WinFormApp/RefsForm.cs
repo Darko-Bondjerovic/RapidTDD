@@ -17,7 +17,9 @@ namespace WinFormApp
         public RefsForm()
         {
             InitializeComponent();
-            
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.ShowInTaskbar = false;
+
             LoadPaths();
             LoadFiles();
 

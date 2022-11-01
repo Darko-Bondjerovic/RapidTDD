@@ -8,6 +8,8 @@ namespace WinFormApp
         public FMsgBox()
         {
             InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.ShowInTaskbar = false;
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)

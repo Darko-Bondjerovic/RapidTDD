@@ -140,8 +140,7 @@ namespace DiffNamespace
                         var o = oldDiffs[indx];
 
                         if (res.oldName == "" && res.expected == "")
-                        {
-                            
+                        {                            
                             res.UpdateFromOld(o);
                             indx++;
                         }                    

@@ -29,9 +29,7 @@ namespace WinFormApp
 
         Worker worker = new Worker();
         private bool run_in_progress = false;
-        private bool HasCompileErorrs = false;
-
-        
+        private bool HasCompileErorrs = false;        
 
         public MainForm()
         {
@@ -70,6 +68,7 @@ namespace WinFormApp
                 _ = worker.ReadCompletionItems(editors[0].TabName, "word").Result;
                 SplashScreen.UdpateStatusText("Done!");
                 editors[0].fctb.Text = "";
+                editors[0].fctb.IsChanged = false;
 
             this.Show();
             SplashScreen.CloseSplashScreen();
@@ -433,7 +432,7 @@ namespace WinFormApp
             }
             finally
             {
-                SetRunInProgress(false);             
+                SetRunInProgress(false);
             }
         }
 

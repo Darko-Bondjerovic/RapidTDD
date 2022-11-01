@@ -46,8 +46,7 @@ namespace DiffNamespace
             lblSelectedTest.TextAlign = ContentAlignment.MiddleLeft;
 
             chkFilter = new CheckBox();
-            chkFilter.ThreeState = true;
-            lblSelectedTest.Font = new Font("Consolas", 14F);
+            chkFilter.ThreeState = true;            
             chkFilter.CheckState = CheckState.Unchecked;
             chkFilter.Text = "all tests";
             chkFilter.Dock = DockStyle.Right;
@@ -150,8 +149,8 @@ namespace DiffNamespace
         {
             if (e.Control && e.KeyCode == Keys.V)
             {
-                ExpectedTextBox.Text += 
-                    (string)Clipboard.GetData("Text");
+                string lPastingText = Clipboard.GetData(DataFormats.Text) as string;
+                ExpectedTextBox.SelectedText = lPastingText; // (string)Clipboard.GetData("Text");
                 e.Handled = true;
             }
         }

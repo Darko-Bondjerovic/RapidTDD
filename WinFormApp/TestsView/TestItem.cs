@@ -1,7 +1,13 @@
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace DiffNamespace
 {
+    public class GroupItem : TestItem
+    {
+        public List<TestItem> Tests = new List<TestItem>();
+    }
+    
     public class TestItem
     {
         private string _exp = "";
@@ -9,12 +15,17 @@ namespace DiffNamespace
         
         public string name = "";
         public bool pass = false;
-
         public int count { get; set; } = 0;
+		public void UpdateNameByCount()
+        {
+            if (count > 0)
+                this.name = $"{++count}.{name}";
+        }
         
         public TestItem Clone() 
         {
-            return new TestItem {
+            return new TestItem 
+			{
                 name = this.name, 
                 exp = this.exp,
                 act = this.act,
@@ -36,11 +47,7 @@ namespace DiffNamespace
             return $"{name}\n{act}\n{exp}";
         }
 
-        public void UpdateNameByCount()
-        {
-            if (count > 0)
-                this.name = $"{++count}.{name}";
-        }
+        
 
         public string act
         {
