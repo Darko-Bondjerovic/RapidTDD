@@ -293,7 +293,7 @@ namespace DiffNamespace
                     currTests.Select(o =>
                         new XElement("TestItem",
                             new XElement("name", o.name),
-                            //new XElement("pass", x.pass),
+                            new XElement("pass", o.pass),
                             new XElement("act", o.act),
                             new XElement("exp", o.exp)
                         ))));

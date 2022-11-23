@@ -20,6 +20,7 @@ namespace WinFormApp
         }
 
         public static bool CancelClosing { get; internal set; } = false;
+        public bool DoBuild { get; internal set; } = true;
 
         private bool SplitEdit = true;
 
@@ -65,7 +66,7 @@ namespace WinFormApp
                 new SolidBrush(Color.FromArgb(50, Color.Gray)));
                         
             box.BorderStyle = BorderStyle.Fixed3D;
-            box.LeftPadding = 17;
+            //box.LeftPadding = 17; // draw vertical line on letft side in edittextbox
             box.Language = Language.CSharp;
             box.AddStyle(sameWordsStyle);
             box.SyntaxHighlighter.ClassNameStyle = classNameStyle;
@@ -86,7 +87,7 @@ namespace WinFormApp
             // this prevent text to put spaces after = e.g. var x = 3;
             box.AutoIndentChars = false;
 
-            box.KeyDown += textboxKeyDown;            
+            //box.KeyDown += textboxKeyDown;            
         }
 
         internal void InsertEmptyMain()
@@ -95,18 +96,18 @@ namespace WinFormApp
                 @"public class Program { static public void Main(string[] args) { } }";
         }
 
-        private void textboxKeyDown(object sender, KeyEventArgs e)
-        {
-            // Alt + Enter
-            //var fctbox = (sender as FastColoredTextBoxNS);
-            //if (e.Modifiers == Keys.Alt && e.KeyCode == Keys.Enter)                        
-            //    fctbox.GenerateCode(ReadSources(),
-            //        fctbox.SelectedText);
+        //private void textboxKeyDown(object sender, KeyEventArgs e)
+        //{
+        //    // Alt + Enter
+        //    //var fctbox = (sender as FastColoredTextBoxNS);
+        //    //if (e.Modifiers == Keys.Alt && e.KeyCode == Keys.Enter)                        
+        //    //    fctbox.GenerateCode(ReadSources(),
+        //    //        fctbox.SelectedText);
 
-            //if (e.Modifiers == Keys.Control && e.KeyCode == Keys.Enter)
-            //    fctbox.GenerateVariable(ReadSources(),
-            //        fctbox.SelectedText);
-        }
+        //    //if (e.Modifiers == Keys.Control && e.KeyCode == Keys.Enter)
+        //    //    fctbox.GenerateVariable(ReadSources(),
+        //    //        fctbox.SelectedText);
+        //}
 
         public Action<EditForm> WhenClosingEditor = edt => { };
 
@@ -153,8 +154,9 @@ namespace WinFormApp
 
         internal void ReloadFile()
         {
-            if (MessageBox.Show($"Reload file? \n {TabName}",
-                "Confirm", MessageBoxButtons.YesNo,
+            if (MessageBox.Show("Reloads the current file from disk, \n" 
+                +"losing all changes since saving? \n\n"
+                +$"{TabName}", "Confirm", MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question) == DialogResult.No) return;
 
             this.fctb.OpenFile(this.FileName as string);
@@ -252,6 +254,14 @@ public class Program
 public class Program
 {
     public static void Main(string[] args)
+    {
+        new Tests().Execute();
+    }
+}
+
+public class Tests
+{
+    public void Execute()
     {
         Print(""[TEST] The I test"");
         Print(""Actual result for I test"") ;

@@ -184,7 +184,9 @@ namespace WinFormApp
 
         private void quitToolStripMenuItem_Click(object sender, System.EventArgs e)
         {
-            Close();
+            if (MessageBox.Show("Quit application?", "Confirm",
+                MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    this.Close();
         }        
 
         private void MakeOutputForm()
@@ -227,7 +229,7 @@ namespace WinFormApp
 
         private EditForm MakeNewEditor()
         {
-            var edt = new EditForm();
+            var edt = new EditForm();            
             edt.TabName = $"new {NewFilesCount++}";
             editors.Add(edt);
             edt.Show(this.dockpanel, DockState.Document);
@@ -491,7 +493,8 @@ namespace WinFormApp
         {
             var list = new List<DocInfo>();
             foreach (var edit in editors)
-                list.Add(MakeDocInfo(edit));
+                if (edit.DoBuild)
+                    list.Add(MakeDocInfo(edit));
 
             return list;
         }
@@ -695,6 +698,34 @@ namespace WinFormApp
         private void displayOutputViewToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MakeOutputForm();
+        }
+
+        private void displayFilesViewToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FilesForm.ShowDialog(editors);                
+        }
+
+        private void closeAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (editors.Count == 0)
+            {
+                MessageBox.Show("Nothing to close...");
+                return;
+            }
+
+            if (MessageBox.Show("Close all documents?", "Confirm",
+                    MessageBoxButtons.YesNo) == DialogResult.No)
+                return;
+
+            for (int i = editors.Count - 1; i >= 0; i--)
+                editors[i].Close();
+        }
+
+        private void linesNumbersToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var edt = CurrentEditForm;
+            if (edt != null)
+                edt.fctb.ShowLineNumbers = !edt.fctb.ShowLineNumbers;            
         }
     }
 }
