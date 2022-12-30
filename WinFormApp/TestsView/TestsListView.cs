@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using System.Xml.Linq;
-using System.Xml;
 using System.Runtime.InteropServices;
 
 namespace DiffNamespace
@@ -316,7 +315,13 @@ namespace DiffNamespace
                     }).ToList();
 
             currTests.Clear(); // upload all new tests
-            DisplayTests(newTests);
+            DisplayTests(newTests);            
+        }
+
+        internal void UnloadTests()
+        {
+            this.currTests.Clear();
+            this.Items.Clear();
         }
     }
 }

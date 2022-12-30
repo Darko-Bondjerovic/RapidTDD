@@ -148,8 +148,11 @@ namespace WinFormApp
         {
             this.FileName = fileName;
             this.TabName = Path.GetFileName(fileName);
-            this.fctb.OpenFile(fileName);
-            ConnectTwoEditors();
+            if (!string.IsNullOrEmpty(fileName))
+            {
+                this.fctb.OpenFile(fileName);
+                ConnectTwoEditors();
+            }
         }
 
         internal void ReloadFile()
@@ -250,11 +253,21 @@ public class Program
         {
             this.fctb.Text =
 @"using System;
+using System.IO;
+using System.Linq;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 public class Program
 {
+    [STAThread]
     public static void Main(string[] args)
     {
+        //Console.WriteLine($"" |{ ""Left"",-7}|{ ""Right"",7}| "");
+
+        //var form = new Form();
+        //form.ShowDialog();
+
         new Tests().Execute();
     }
 }
@@ -265,6 +278,7 @@ public class Tests
     {
         Print(""[TEST] The I test"");
         Print(""Actual result for I test"") ;
+        Print(""[EXPC]Actual result for I test"") ;
 
         Print(""[TEST] The II test"");
         for (int i = 1; i < 5; i++)

@@ -6,7 +6,19 @@ namespace DiffNamespace
 {
     public class TestsPanel : TableLayoutPanel
     {
-        string TestsFileName = "";
+        string _testsfn = "";
+
+        public string TestsFileName
+        {
+            get { return _testsfn; }
+            set 
+            { 
+                _testsfn = value;
+                UpdateTitle(_testsfn);
+            }
+        }
+
+        public Action<string> UpdateTitle = (s) => { };
 
         Panel testsTopPanel = null;
         SplitContainer split1 = null;
@@ -19,6 +31,16 @@ namespace DiffNamespace
         public TestsListView TestsListView = null;
         public ColoredTextBox ActualTextBox = null;
         public ColoredTextBox ExpectedTextBox = null;
+
+        internal void AskToSaveTestFile()
+        {
+            if (TestsFileName != "")
+                if (DialogResult.Yes == MessageBox.Show(
+                        $"Save tests file?\n{TestsFileName}", "Confirm",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Information))
+                SaveTests();            
+        }
 
         private string TESTS_FILTER = 
                 "Tests file (*.tst)" + "|*.tst|" +
@@ -269,8 +291,10 @@ namespace DiffNamespace
                 if (saveDlg.ShowDialog() == DialogResult.OK)
                     TestsFileName = saveDlg.FileName;
             }
-            if (TestsFileName != "")
+            else
+            {
                 TestsListView.SaveTests(TestsFileName);
+            }
         }
 
         private OpenFileDialog CreateOpenDialog()
@@ -288,9 +312,14 @@ namespace DiffNamespace
             if (openDlg.ShowDialog() == DialogResult.OK)
             {
                 TestsListView.Items.Clear();
-                TestsListView.LoadTests(openDlg.FileName);
-                TestsFileName = openDlg.FileName;
+                LoadTestsFromFile(openDlg.FileName);
             }
+        }
+
+        public void LoadTestsFromFile(string filename)
+        {
+            TestsListView.LoadTests(filename);
+            TestsFileName = filename;
         }
 
         internal void ShowResponseInUI(string response)
@@ -425,6 +454,12 @@ namespace DiffNamespace
                 TestsFileName = saveDlg.FileName;
                 TestsListView.SaveTests(TestsFileName);
             }
+        }
+
+        internal void UnloadTests()
+        {
+            TestsListView.UnloadTests();
+            TestsFileName = "";
         }
     }
 }

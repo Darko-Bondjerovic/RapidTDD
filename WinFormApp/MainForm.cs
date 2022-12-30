@@ -20,11 +20,11 @@ namespace WinFormApp
 
         Font font = EditForm.FONT_FOR_SOURCE;
         int NewFilesCount = 1;
-        TestsForm tstForm = null;
+        public TestsForm tstForm = null;
         OutputForm outForm = null;
         ErrorForm errForm = null;
 
-        List<EditForm> editors = new List<EditForm>();
+        public List<EditForm> editors = new List<EditForm>();
         private string ThemeName = "VSDark"; //"Afterglow";
 
         Worker worker = new Worker();
@@ -35,12 +35,21 @@ namespace WinFormApp
         {
             InitializeComponent();            
             WindowState = FormWindowState.Maximized;
+            this.FormClosing += MainForm_FormClosing;
 
             this.IsMdiContainer = true;
             menuStrip1.MdiWindowListItem = viewsToolStripMenuItem;
             worker.WriteInfo += WriteInfo;
 
             RunSplashScreen();
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // if we close all files, check for test file!
+            if (tstForm != null)
+                if (editors.Count == 0)
+                    tstForm.tstPanel.AskToSaveTestFile();
         }
 
         private void RunSplashScreen()
@@ -56,9 +65,9 @@ namespace WinFormApp
             //In properties or LoadForm, set all 4 anchors;
             //dockpanel.Anchor = Top, Left, Bottom, Right
             SplashScreen.UdpateStatusText("Load views...");
-            MakeTestForm();
-            MakeOutputForm();
             MakeErrorForm();
+            MakeOutputForm();
+            MakeTestForm();
 
                 // Load code, compile, run. load completions:
                 MakeNewEditor().InsertEmptyMain();
@@ -159,14 +168,19 @@ namespace WinFormApp
             }
         }
 
-        private void OpenFileInEditor(string fileName)
+        public EditForm OpenFileInEditor(string fileName)
         {
             var edt = IsFileAlreadyOpen(fileName);
 
             if (edt == null)
-                MakeNewEditor().LoadFile(fileName);
+            {
+                edt = MakeNewEditor();
+                edt.LoadFile(fileName);
+            }
             else
                 edt.ReloadFile();
+
+            return edt;
         }
 
         private EditForm IsFileAlreadyOpen(string fileName)
@@ -198,7 +212,6 @@ namespace WinFormApp
             }
 
             outForm.Show(this.dockpanel, DockState.DockLeft);
-
         }
 
         private void OutForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -211,16 +224,16 @@ namespace WinFormApp
             if (tstForm == null)
             {
                 tstForm = new TestsForm();
-                tstForm.FormClosing += Testform_FormClosing;
+                tstForm.WhenFormClosing += TestFormClosing;
             }
-
+            
             tstForm.Show(this.dockpanel, DockState.DockLeft);
         }
 
-        private void Testform_FormClosing(object sender, FormClosingEventArgs e)
-        {
+        public void TestFormClosing()
+        {            
             tstForm = null;
-        }
+        }        
 
         private void newToolStripMenuItem_Click(object sender, System.EventArgs e)
         {
@@ -327,6 +340,11 @@ namespace WinFormApp
         }
 
         private void saveAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveAllFiles();
+        }
+
+        public void SaveAllFiles()
         {
             foreach (EditForm frm in editors)
                 frm.SaveFile();
@@ -601,12 +619,18 @@ namespace WinFormApp
                 tstForm.tstPanel.LoadTests();
         }
 
+        public void LoadTestsFromFile(string filename)
+        {
+            if (tstForm != null)
+                tstForm.tstPanel.LoadTestsFromFile(filename);
+        }
+
         private void saveTestsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SaveTestFile();
         }
 
-        private void SaveTestFile()
+        void SaveTestFile()
         {
             if (tstForm != null)
                 tstForm.tstPanel.SaveTests();
@@ -702,7 +726,8 @@ namespace WinFormApp
 
         private void displayFilesViewToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FilesForm.ShowDialog(editors);                
+            var tsfn = tstForm == null ? "" : tstForm.tstPanel.TestsFileName;
+            FilesForm.ShowDialog(this, editors, tsfn);                
         }
 
         private void closeAllToolStripMenuItem_Click(object sender, EventArgs e)
@@ -719,6 +744,14 @@ namespace WinFormApp
 
             for (int i = editors.Count - 1; i >= 0; i--)
                 editors[i].Close();
+
+            editors.Clear();
+
+            if (tstForm != null)
+            {
+                tstForm.tstPanel.AskToSaveTestFile();
+                tstForm.tstPanel.UnloadTests();
+            }
         }
 
         private void linesNumbersToolStripMenuItem_Click(object sender, EventArgs e)
@@ -726,6 +759,12 @@ namespace WinFormApp
             var edt = CurrentEditForm;
             if (edt != null)
                 edt.fctb.ShowLineNumbers = !edt.fctb.ShowLineNumbers;            
+        }
+
+        private void unloadTestsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (tstForm != null)
+                tstForm.tstPanel.UnloadTests();
         }
     }
 }

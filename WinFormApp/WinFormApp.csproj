@@ -256,6 +256,9 @@
     <EmbeddedResource Include="SplashForm.resx">
       <DependentUpon>SplashForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="TestsView\TestsForm.resx">
+      <DependentUpon>TestsForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="TestsView\UpdateDlg.resx">
       <DependentUpon>UpdateDlg.cs</DependentUpon>
     </EmbeddedResource>
