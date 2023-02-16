@@ -4,6 +4,10 @@ using System.Windows.Forms;
 
 namespace WinFormApp
 {
+    // usage :
+    //if (InputBox.ShowDialog("Answer", "Enter value: ", ref answer) == DialogResult.OK)
+    
+    
     public static class InputBox
     {
         public static DialogResult ShowDialog(string title, string promptText, ref string value)

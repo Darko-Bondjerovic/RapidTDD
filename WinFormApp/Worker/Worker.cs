@@ -1,8 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
+using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Rename;
 using Microsoft.CodeAnalysis.Text;
@@ -17,8 +17,10 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Formatting;
-using System.Windows.Forms;
+
+using Microsoft.CodeAnalysis.ExtractMethod; // IExtractMethodService
+using Microsoft.CodeAnalysis.CSharp.ExtractMethod; // service
+
 
 namespace WinFormApp
 {
@@ -137,6 +139,8 @@ namespace WinFormApp
             AddNetFrameworkDefaultReferences();
 
             AddThirdPartyRefs();
+
+            MakeAndAddProject();
         }
 
 
@@ -395,6 +399,12 @@ namespace WinFormApp
                     $"The function lasted longer " +
                     $"than the maximum allowed time. [{vaittime} sec]");
         }
+        
+        //public async Task<List<DocInfo>> ExtractMethod(DocInfo docinfo)
+        //{            
+        //    var service = new CSharpExtractMethodService() as IExtractMethodService;
+        //    return await service.ExtractMethodAsync(document, default(TextSpan));
+        //}
 
         public async Task<List<DocInfo>> RenameSymbol(DocInfo docInfo,
             int position, string newName)

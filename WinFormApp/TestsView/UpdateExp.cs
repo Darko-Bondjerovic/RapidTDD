@@ -2,162 +2,288 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using System.Security.Cryptography;
 
 namespace DiffNamespace
 {
     public class UpdateItem
     {
-        public bool IsSame = false;
-        public string oldName = "";
-        public string newName = "";
-        public string expected = "";
+        public TestItem oldti = new TestItem();
+        public TestItem newti = new TestItem();
+        
+        public bool ForDelete = false;
+
+        public string expected
+        {
+            get
+            {
+                return newti.exp == "" ? oldti.exp : newti.exp;
+            }
+        }
 
         public UpdateItem() { }
 
-        public UpdateItem(TestItem newt)
+        public UpdateItem(TestItem newti)
         {
-            this.newName = newt.name;
-            this.expected = newt.exp;
+            this.newti = newti;
         }
 
         static public UpdateItem MakeFromOld(TestItem old)
         {
-            return new UpdateItem()
-            {
-                oldName = old.name,
-                newName = "",
-                expected = old.exp
-            };
+            var result = new UpdateItem();
+            result.oldti = old;
+            result.ForDelete = true;
+            return result;
         }
 
         public override string ToString()
         {
-            return $"{IsSame,-6}|{oldName,-12}|{newName,-12}|{expected}";
+            return $"{ForDelete,-6}|{oldti.name,-12}|{newti.name,-12}|{expected}";
+        }
+        
+        public string[] ToListViewStr()
+        {
+            return new[] { oldti.name, newti.name, expected };
         }
 
-        public void UpdateFromOld(TestItem old)
+        public void SetOldItem(TestItem old)
         {
-            this.oldName = old.name;
-            if (expected == "")
-                expected = old.exp;
+            this.oldti = old;
+        }
+
+        internal bool IsSameNames()
+        {
+            return oldti.name.Equals(newti.name);
         }
     }
 
     public class UpdateExp
     {
-        // this class copy exp. value from old tests to new tests, if new tests 
-        // does not exists in list of old tests (and exp.value is empty)
+        // This class copy exp. value from old tests to new tests with same name
+        // Find tests with different names and try to mach them (rename or delete)
 
-        public enum Operation { DeleteDiffs, RenameDiffs };
+        protected bool rename = true;
+        
+        protected List<TestItem> oldList = null;
+        protected List<TestItem> newList = null;
+        protected List<TestItem> oldDiffs = null;
+        
+        public List<UpdateItem> Result = new List<UpdateItem>();
 
-        Operation operation = Operation.RenameDiffs;
+        public bool HaveDiffs { get; set; } = false;
 
-        List<TestItem> oldList = null;
-        List<TestItem> newList = null;
+        protected bool keepOld = false;        
 
-        List<TestItem> oldDiffs = null;
-
-        public List<UpdateItem> result = new List<UpdateItem>();
-
-        public UpdateExp(List<TestItem> oldList, List<TestItem> newList)
+        public UpdateExp(List<TestItem> oldList, List<TestItem> newList, bool keep = false)
         {
             this.oldList = oldList;
             this.newList = newList;
 
             oldDiffs = oldList.Except(newList).ToList();
-        }
+            HaveDiffs = oldDiffs.Count != 0;
 
-        public void Find(bool rename)
-        {
-            var op = rename ? Operation.RenameDiffs 
-                : Operation.DeleteDiffs;
-
-            Find(op);
-        }
-
-        public void Find(Operation operation)
-        {
-            if (oldList.Count == 0)
-                return;
-
-            this.operation = operation;
-
-            result.Clear();
-            FindForSame();
-            FindForDiffs();
-        }
-
-        public void FindForSame()
-        {
-            for (int i = 0; i < newList.Count; i++)
+            this.keepOld = keep;
+            if (keep)
             {
-                var n = newList[i];
-
-                var item = new UpdateItem(n);
-
-                var o = oldList
-                    .Where(x => x.name.Equals(n.name))
-                    .FirstOrDefault();
-
-                if (o != null)
+                foreach (var o in oldDiffs)
                 {
-                    item.IsSame = true;
-                    item.UpdateFromOld(o);
+                    o.Ignore = true;
+                    if (o is GroupItem)
+                    {
+                        var gr = o as GroupItem;
+                        foreach (var t in gr.Tests)
+                            t.Ignore = true;
+                    }
                 }
 
-                result.Add(item);
+                newList.AddRange(oldDiffs);
+            }
+        }
+        
+        public void Find(bool rename)
+        {
+            this.rename = rename;
+            Result.Clear();
+            DoFind();
+        }
+
+        protected virtual void DoFind()
+        {
+            FindSame();
+            FindDiffs();
+        }
+
+        void FindSame()
+        {
+            foreach(var n in newList)
+            {
+                var item = new UpdateItem(n);
+
+                var old = oldList
+                    .Where(o => o.Equals(n))
+                    .FirstOrDefault();
+
+                if (old != null)
+                    item.SetOldItem(old);
+
+                Result.Add(item);
             }
         }
 
-        internal int GetNewCount()
+        void FindDiffs()
         {
-            return newList.Count;
-        }
-
-        public bool HaveDiffs()
-        {
-            if (oldDiffs.Count == 0)
-                return false; // nothing to update / rename
-
-            return true;
-        }
-
-        public void FindForDiffs()
-        {
-            if (!HaveDiffs())
-                return;
-
             var indx = 0;
-            
-            if (operation == Operation.RenameDiffs)
+
+            if (rename)
             {
-                for (int i = 0; i < result.Count; i++)
+                for (int i = 0; i < Result.Count; i++)
                 {
-                    var res = result[i];
-
-                    if (indx < oldDiffs.Count)
+                    var res = Result[i];
+                    if (indx < oldDiffs.Count && res.oldti.name == "")
                     {
-                        var o = oldDiffs[indx];
-
-                        if (res.oldName == "" && res.expected == "")
-                        {                            
-                            res.UpdateFromOld(o);
-                            indx++;
-                        }                    
+                        res.SetOldItem(oldDiffs[indx]);
+                        indx++;
                     }
                 }
             }
 
             // add rest of previous different tests 
             for (int i = indx; i < oldDiffs.Count; i++)
-                result.Add(UpdateItem.MakeFromOld(oldDiffs[i]));
+            {
+                var updItem = UpdateItem.MakeFromOld(oldDiffs[i]);
+                updItem.ForDelete = true;
+                Result.Add(updItem);
+            }
         }
-        
+
         public void PrevExpToNew()
         {
-            for(int i=0; i<newList.Count; i++)
-                if (i < result.Count)
-                    newList[i].exp = result[i].expected;
+            foreach (var item in Result)
+            {
+                var o = item.oldti;
+                var n = item.newti;
+
+                if (!item.ForDelete)
+                    n.exp = item.expected;
+            }
+        }
+        
+        public static bool IsOverlap(int OrigListCount, int dropIndex, List<int> selIndx)
+        {
+            if (dropIndex == -1)
+                dropIndex = OrigListCount;
+
+            var target = Enumerable.Range(dropIndex, selIndx.Count).ToList();
+        
+            if (target.Intersect(selIndx).Any())
+                return true;
+            
+            return false;
+        }
+
+        
+        public bool MoveItems(List<int> indexes, int dropIndex)
+        {
+            if (IsOverlap(this.Result.Count, dropIndex, indexes))
+            {
+                MessageBox.Show("Can't move selected items to the same items.");
+                return false;
+            }
+            
+            var selected = new List<UpdateItem>();
+
+            foreach (var l in indexes)            
+                selected.Add(Result[l]);            
+            
+            for(int i=0; i < selected.Count; i++)
+            {
+                var indx = dropIndex + i;                
+                var old = selected[i].oldti;
+
+                if (dropIndex == -1 || Result.Count <= indx)
+                    Result.Add( UpdateItem.MakeFromOld(old));
+                else
+                    Result[indx].SetOldItem(old);
+            }
+
+            for (int i = indexes.Count - 1; i >= 0; i--)
+            {
+                var indx = indexes[i];
+                var res = Result[indx];
+
+                if (res.newti.NoName())
+                    Result.RemoveAt(indx);
+                else
+                    res.SetOldItem(new TestItem());
+            }                
+            
+            return true;
+        }
+
+        internal bool NewListIsEmpty()
+        {
+            return newList.Count == 0;
         }
     }
+
+    public class UpdateExpGroups : UpdateExp
+    {
+        public UpdateExpGroups (List<TestItem> oldList, List<TestItem> newList, bool keep = false) 
+            : base( oldList, newList, keep) { }
+        
+        protected override void DoFind()
+        {
+            var newti = GetTestItems(newList);
+            var upti = new UpdateExp(GetTestItems(oldList), newti, keepOld);
+            upti.Find(rename);
+            
+            Result.AddRange(upti.Result.ToList());
+            this.HaveDiffs = upti.HaveDiffs;
+            
+            var oldgr = GetGroupItems(oldList);
+            var newgr = GetGroupItems(newList);
+            if (oldgr.Count == 0 && newgr.Count == 0)
+                return;
+            
+            var upgr = new UpdateExp(oldgr, newgr, keepOld);
+            upgr.Find(rename);
+            this.HaveDiffs = HaveDiffs || upgr.HaveDiffs;
+
+            foreach (var r in upgr.Result)
+            {
+                var up = new UpdateExp(GetTests(r.oldti), GetTests(r.newti), keepOld);
+                up.Find(rename);
+
+                this.HaveDiffs = HaveDiffs || up.HaveDiffs;
+
+                Result.Add(r);
+                Result.AddRange(up.Result);
+            }
+        }
+        
+        List<TestItem> GetTests(TestItem item)
+        {
+            var result = new List<TestItem>();
+            
+            if (item is GroupItem)
+                result = (item as GroupItem).Tests;
+            
+            return result;
+        }
+        
+        List<TestItem> GetGroupItems(List<TestItem> list)
+        {
+            return list.Where(x => x is GroupItem).ToList();
+        }
+
+        List<TestItem> GetTestItems(List<TestItem> list)
+        {
+            return list.Where(x => !(x is GroupItem)).ToList();
+        }
+        
+    }
+
 }
+
+
+

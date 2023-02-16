@@ -33,12 +33,28 @@ namespace DiffNamespace
             
             if (!response.Contains(GROUP_KEYWORD))
                 return FindTests(response);
-            
+
+            // if we have tests at start, no group:
+            var firstGroupIndx = response.IndexOf(GROUP_KEYWORD);
+            var testsOnly = response.Substring(0, firstGroupIndx);
+            if (!string.IsNullOrEmpty(testsOnly))
+            {
+                all.AddRange(FindTests(testsOnly));
+                response = response.Remove(0, testsOnly.Length);
+            }
+
             var grps = response.Split(new string[] { GROUP_KEYWORD },
                     StringSplitOptions.None);
 
-            foreach(var gr in grps)
+            for (int i=0; i<grps.Length; i++)
             {
+                var gr = grps[i];
+                if (i == 0 && !gr.Contains(GROUP_KEYWORD))
+                { 
+                    all.AddRange(FindTests(gr));
+                    continue;
+                }
+
                 var indx = gr.IndexOf("\n");
                 if (indx > -1)
                 {                    

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -10,6 +10,8 @@ namespace DiffNamespace
     //https://stackoverflow.com/questions/6547193/how-to-append-text-to-richtextbox-without-scrolling-and-losing-selection
     public class SynchronizedTextBox : RichTextBox
     {
+        public bool ShowDiffs = true;
+
         #region ScrollBoth
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1009:DeclareEventHandlersCorrectly")]
@@ -19,6 +21,11 @@ namespace DiffNamespace
         public const int WM_HSCROLL = 0x114;
         public const int WM_MOUSEWHEEL = 0x020A;
 
+        //https://stackoverflow.com/questions/9768938/change-the-bordercolor-of-the-textbox
+
+        [DllImport("user32")]
+        private static extern IntPtr GetWindowDC(IntPtr hwnd);
+        private const int WM_NCPAINT = 0x85;
         protected override void WndProc(ref Message m)
         {
             // Code courtesy of Mark Mihevc  
@@ -30,6 +37,16 @@ namespace DiffNamespace
                     vScroll(m);
 
             base.WndProc(ref m);
+
+            //Change the borderColor of the TextBox
+            if (m.Msg == WM_NCPAINT && !ShowDiffs)
+            {
+                var dc = GetWindowDC(Handle);
+                using (Graphics g = Graphics.FromHdc(dc))
+                {
+                    g.DrawRectangle(Pens.Orange, 0, 0, Width - 1, Height - 1);
+                }
+            }
         }
 
         public void PubWndProc(ref Message message)
@@ -96,7 +113,7 @@ namespace DiffNamespace
 
         public static SolidBrush DARK_BRUSH = new SolidBrush(DARK_COLOR);
 
-        private bool darkTheme = true;
+        private bool darkTheme = true;        
 
         public void ChangeTheme()
         {
@@ -134,13 +151,20 @@ namespace DiffNamespace
 
         public static diff_match_patch _diff = new diff_match_patch();
 
-	private static int GetLength(string str)
+    private static int GetLength(string str)
         {
             return str.Replace("\n", "  ").Length;
         }
 
         internal void PaintDiffs(TestItem tst)
         {
+            if (!ShowDiffs)
+            {
+                this.Text = tst.act;
+                this.SelectionStart = 0;
+                return;
+            }
+
             var diffs = _diff.diff_main(tst.act, tst.exp, false);
             _diff.diff_cleanupSemanticLossless(diffs);
 
@@ -148,7 +172,7 @@ namespace DiffNamespace
 
             foreach (Diff diff in diffs)
             {   
-		        var length = TextLength;
+                var length = TextLength;
                 var newText = SetSpecialChars(diff.text);
                 AppendText(newText);
                 Select(length, GetLength(newText));
@@ -163,6 +187,8 @@ namespace DiffNamespace
                 }
                 SelectionBackColor = color;
             }
+
+            this.SelectionStart = 0;
         }
 
         private static string SetSpecialChars(string txt)

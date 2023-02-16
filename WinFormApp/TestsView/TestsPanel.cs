@@ -18,6 +18,8 @@ namespace DiffNamespace
             }
         }
 
+        public bool TestsAreChanged { get; set; } = false;
+
         public Action<string> UpdateTitle = (s) => { };
 
         Panel testsTopPanel = null;
@@ -27,14 +29,14 @@ namespace DiffNamespace
         Button btnCopy = null;        
         Label lblSelectedTest = null;
         CheckBox chkFilter = null;
-
-        public TestsListView TestsListView = null;
+        
+        public TestsTreeView treeView = null;
         public ColoredTextBox ActualTextBox = null;
         public ColoredTextBox ExpectedTextBox = null;
 
         internal void AskToSaveTestFile()
         {
-            if (TestsFileName != "")
+            if (TestsFileName != "" && TestsAreChanged)
                 if (DialogResult.Yes == MessageBox.Show(
                         $"Save tests file?\n{TestsFileName}", "Confirm",
                         MessageBoxButtons.YesNo,
@@ -102,6 +104,20 @@ namespace DiffNamespace
             testsTopPanel.Controls.Add(btnOrnt2);
             btnOrnt2.Click += ClickOrnt2;
             btnOrnt2.Dock = DockStyle.Right;
+            
+            var btnExpand = new Button();
+            btnExpand.Text = "+";
+            btnExpand.Width = 24;
+            testsTopPanel.Controls.Add(btnExpand);
+            btnExpand.Click += BtnExpand_Click;
+            btnExpand.Dock = DockStyle.Right;
+            
+            var btnCollapse = new Button();
+            btnCollapse.Text = "-";
+            btnCollapse.Width = 24;
+            testsTopPanel.Controls.Add(btnCollapse);
+            btnCollapse.Click += BtnCollapse_Click;
+            btnCollapse.Dock = DockStyle.Right;
 
             split1 = new SplitContainer();
             split1.Dock = DockStyle.Fill;
@@ -109,11 +125,11 @@ namespace DiffNamespace
             split1.Orientation = Orientation.Vertical;
             split1.SplitterDistance = (2 * split1.Parent.Width) / 5;
 
-            TestsListView = new TestsListView();
-            TestsListView.Dock = DockStyle.Fill;
-            split1.Panel1.Controls.Add(TestsListView);
-            TestsListView.SelectedIndexChanged += ListView1_SelectedIndexChanged;
-            TestsListView.DoUpdateUI = UpdateSelectedTestToUI;            
+            treeView = new TestsTreeView();
+            treeView.Dock = DockStyle.Fill;
+            split1.Panel1.Controls.Add(treeView);
+            treeView.AfterSelect += TreeView_AfterSelect;
+            treeView.DoUpdateUI = UpdateSelectedTestToUI;            
 
             diffSplit = new SplitContainer();
             diffSplit.Dock = DockStyle.Fill;
@@ -124,12 +140,13 @@ namespace DiffNamespace
             ActualTextBox = new ColoredTextBox()
             {
                 Dock = DockStyle.Fill,                             
-                ReadOnly = true,
-            };
+                ReadOnly = true,                       
+            };            
 
             ActualTextBox.vScroll += txtSource_vScroll;
             ActualTextBox.KeyUp += txtSource_KeyUp;
             diffSplit.Panel1.Controls.Add(ActualTextBox);
+            ActualTextBox.DoubleClick += ActualTextBox_DoubleClick;
 
             ExpectedTextBox = new ColoredTextBox()
             {
@@ -145,6 +162,25 @@ namespace DiffNamespace
             diffSplit.Panel2.Controls.Add(ExpectedTextBox);
 
             ChangeOrientation(split1);
+        }
+
+        private void BtnExpand_Click(object sender, EventArgs e)
+        {
+            treeView.ExpandAll();
+        }
+        
+        private void BtnCollapse_Click(object sender, EventArgs e)
+        {
+            treeView.CollapseAll();
+        }
+        
+        private void ActualTextBox_DoubleClick(object sender, EventArgs e)
+        {
+            ActualTextBox.ShowDiffs = !ActualTextBox.ShowDiffs;
+            
+            var tst = GetSelectedTest();
+            if (tst != null)
+                PaintTestDiffsInActBox(tst);
         }
 
         private void ChkFilter_CheckStateChanged(object sender, EventArgs e)
@@ -164,7 +200,8 @@ namespace DiffNamespace
                     break;
             }
 
-            this.TestsListView.SetFilterState(chkFilter.CheckState);
+            this.treeView.SetFilterState(chkFilter.CheckState);
+            UpdateSelectedTestToUI();
         }
 
         private void WhenPasteText(object sender, KeyEventArgs e)
@@ -187,41 +224,35 @@ namespace DiffNamespace
             if (MessageBox.Show("Copy actual result into expected for all tests?", "Confirm",
                                MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                TestsListView.CopyAllActToExp();
-                TestsListView.DisplayInUI();
-
+                treeView.CopyAllActToExp();
+                treeView.DisplayInUI();
             }
         }
 
-        private void ListView1_SelectedIndexChanged(object sender, EventArgs e)
+        private void TreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            // this method called 2 times: I for unselected
-            // and II for selected item in list. :(
-            if (TestsListView.SelectedItems.Count == 0)
-                return;
-            
-            UpdateSelectedTestToUI();
+             UpdateSelectedTestToUI();
         }
         
         private void UpdateSelectedTestToUI()
         {
             lblSelectedTest.Text =
-                TestsListView.Progress();
+                treeView.Progress();
 
-            var tst = GetSelectedTest();
-            if (tst != null)
+            var tst = GetSelectedTest();            
+            if (tst == null)                
+                tst = new TestItem() { pass = true }; 
+            
+            Action action = () => 
             {
-                //lblSelectedTest.Text += tst.name;
+                ActualTextBox.Text= tst.act;
+                ExpectedTextBox.Text = tst.exp;
+            };
 
-                Action action = () => 
-                {
-                    ActualTextBox.Text= tst.act;
-                    ExpectedTextBox.Text = tst.exp;
-                };
-                
-                RunUpdateUI(action);                
-                ScrollPosToTop();
-            }
+            RunUpdateBoxesUI(action, tst);
+
+            ScrollPosToTopForBoxes();
+            
         }
         
         private void WhenTextChanged(object sender, EventArgs e)
@@ -234,24 +265,24 @@ namespace DiffNamespace
 
             // TestItem run diff when exp is changed,
             // then we should repaint text boxes:
-            RunUpdateUI(action);
+            RunUpdateBoxesUI(action, tst);
 
-            lblSelectedTest.Text = TestsListView.Progress();
+            lblSelectedTest.Text = treeView.Progress();
         }
         
-        void RunUpdateUI(Action action)
+        void RunUpdateBoxesUI(Action action, TestItem tst)
         {
             ActualTextBox.TextChanged -= WhenTextChanged;
             ExpectedTextBox.TextChanged -= WhenTextChanged;
 
             try
             {
-                if (action != null)
+                if (action != null)                
                     action();
+                   
+                PaintTestDiffsInActBox(tst);                
 
-                TestsListView.Refresh(); // if test pass/fail :)
-
-                PaintTestDiffsInActBox();
+                treeView.UpdateIcons(); // if test pass/fail :)
             }
             finally
             {
@@ -267,8 +298,6 @@ namespace DiffNamespace
                 tst.CopyActToExp();
 
             UpdateSelectedTestToUI();
-
-            TestsListView.DisplayInUI();
         }        
 
         private SaveFileDialog CreateSaveDialog()
@@ -282,7 +311,7 @@ namespace DiffNamespace
 
         internal void SaveTests()
         {
-            if (!TestsListView.HaveTests())
+            if (!treeView.HaveTests())
                 return;
 
             if (TestsFileName == "")
@@ -293,7 +322,7 @@ namespace DiffNamespace
             }
             else
             {
-                TestsListView.SaveTests(TestsFileName);
+                treeView.SaveTests(TestsFileName);
             }
         }
 
@@ -311,37 +340,34 @@ namespace DiffNamespace
             OpenFileDialog openDlg = CreateOpenDialog();
             if (openDlg.ShowDialog() == DialogResult.OK)
             {
-                TestsListView.Items.Clear();
+                treeView.Nodes.Clear();
                 LoadTestsFromFile(openDlg.FileName);
-            }
+            }   
         }
 
         public void LoadTestsFromFile(string filename)
         {
-            TestsListView.LoadTests(filename);
+            treeView.LoadTestsFromFile(filename);
             TestsFileName = filename;
         }
 
         internal void ShowResponseInUI(string response)
         {
             var newTests = Parser.Find(response);
-            TestsListView.DisplayTests(newTests);
+            treeView.DisplayTests(newTests);
+            TestsAreChanged = true;
         }
         
         private TestItem GetSelectedTest()
-        {
-            if (TestsListView.SelectedItems.Count == 0)
-                return null;
-            
-            var lvi = TestsListView.SelectedItems[0];
-            return (TestItem)lvi.Tag ?? (TestItem)lvi.Tag;
+        {   
+            return treeView.GetSelectedTest();
         }
 
         internal void ChangeTheme()
         {
             ActualTextBox.ChangeTheme();
             ExpectedTextBox.ChangeTheme();
-            TestsListView.ChangeTheme();
+            //TestsListView.ChangeTheme(); //todo
         }
 
         private void txtSource_vScroll(Message message)
@@ -411,25 +437,17 @@ namespace DiffNamespace
             CopyTextActToExp();
         }
         
-        private void PaintTestDiffsInActBox()
+        private void PaintTestDiffsInActBox(TestItem tst)
         {
-            ActualTextBox.SuspendPainting();
-
-            var tst = GetSelectedTest();
             if (tst == null)
                 return;
 
+            ActualTextBox.SuspendPainting();
             tst.PaintBoxUI(ActualTextBox);
-
             ActualTextBox.ResumePainting();
         }
 
-        public void SetLstViewColumnWidth()
-        {
-            TestsListView.Columns[0].Width = TestsListView.ClientRectangle.Width;
-        }
-
-        private void ScrollPosToTop()
+        private void ScrollPosToTopForBoxes()
         {
             if (ActualTextBox.Text != "")
             {
@@ -452,13 +470,13 @@ namespace DiffNamespace
             if (saveDlg.ShowDialog() == DialogResult.OK)
             {
                 TestsFileName = saveDlg.FileName;
-                TestsListView.SaveTests(TestsFileName);
+                treeView.SaveTests(TestsFileName);
             }
         }
 
         internal void UnloadTests()
         {
-            TestsListView.UnloadTests();
+            treeView.UnloadTests();
             TestsFileName = "";
         }
     }

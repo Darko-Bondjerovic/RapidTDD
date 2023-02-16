@@ -35,6 +35,7 @@ namespace DiffNamespace
             this.rbRename = new System.Windows.Forms.RadioButton();
             this.panel2 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
+            this.chkAllowDrop = new System.Windows.Forms.CheckBox();
             this.chkOnlyDiffs = new System.Windows.Forms.CheckBox();
             this.listView1 = new System.Windows.Forms.ListView();
             this.panel1.SuspendLayout();
@@ -52,7 +53,7 @@ namespace DiffNamespace
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Margin = new System.Windows.Forms.Padding(2);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(691, 117);
+            this.panel1.Size = new System.Drawing.Size(808, 117);
             this.panel1.TabIndex = 1;
             // 
             // btnCancel
@@ -61,7 +62,7 @@ namespace DiffNamespace
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.btnCancel.Font = new System.Drawing.Font("Consolas", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnCancel.Location = new System.Drawing.Point(575, 62);
+            this.btnCancel.Location = new System.Drawing.Point(692, 62);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(2);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(105, 39);
@@ -75,7 +76,7 @@ namespace DiffNamespace
             this.btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnOk.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.btnOk.Font = new System.Drawing.Font("Consolas", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnOk.Location = new System.Drawing.Point(575, 16);
+            this.btnOk.Location = new System.Drawing.Point(692, 16);
             this.btnOk.Margin = new System.Windows.Forms.Padding(2);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(105, 39);
@@ -90,7 +91,7 @@ namespace DiffNamespace
             this.rbDelete.Location = new System.Drawing.Point(24, 68);
             this.rbDelete.Margin = new System.Windows.Forms.Padding(2);
             this.rbDelete.Name = "rbDelete";
-            this.rbDelete.Size = new System.Drawing.Size(398, 26);
+            this.rbDelete.Size = new System.Drawing.Size(514, 31);
             this.rbDelete.TabIndex = 1;
             this.rbDelete.Text = "Delete previous tests and exp. values";
             this.rbDelete.UseVisualStyleBackColor = true;
@@ -103,7 +104,7 @@ namespace DiffNamespace
             this.rbRename.Location = new System.Drawing.Point(24, 22);
             this.rbRename.Margin = new System.Windows.Forms.Padding(2);
             this.rbRename.Name = "rbRename";
-            this.rbRename.Size = new System.Drawing.Size(418, 26);
+            this.rbRename.Size = new System.Drawing.Size(540, 31);
             this.rbRename.TabIndex = 0;
             this.rbRename.TabStop = true;
             this.rbRename.Text = "Rename tests and keep prev. exp. values";
@@ -117,18 +118,32 @@ namespace DiffNamespace
             this.panel2.Location = new System.Drawing.Point(0, 117);
             this.panel2.Margin = new System.Windows.Forms.Padding(2);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(691, 522);
+            this.panel2.Size = new System.Drawing.Size(808, 694);
             this.panel2.TabIndex = 2;
             // 
             // panel3
             // 
+            this.panel3.Controls.Add(this.chkAllowDrop);
             this.panel3.Controls.Add(this.chkOnlyDiffs);
             this.panel3.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel3.Location = new System.Drawing.Point(0, 495);
+            this.panel3.Location = new System.Drawing.Point(0, 654);
             this.panel3.Margin = new System.Windows.Forms.Padding(2);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(691, 27);
+            this.panel3.Size = new System.Drawing.Size(808, 40);
             this.panel3.TabIndex = 2;
+            // 
+            // chkAllowDrop
+            // 
+            this.chkAllowDrop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkAllowDrop.AutoSize = true;
+            this.chkAllowDrop.Font = new System.Drawing.Font("Consolas", 14.25F, System.Drawing.FontStyle.Bold);
+            this.chkAllowDrop.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.chkAllowDrop.Location = new System.Drawing.Point(552, 3);
+            this.chkAllowDrop.Name = "chkAllowDrop";
+            this.chkAllowDrop.Size = new System.Drawing.Size(229, 32);
+            this.chkAllowDrop.TabIndex = 1;
+            this.chkAllowDrop.Text = "Allow Drag Drop";
+            this.chkAllowDrop.UseVisualStyleBackColor = true;
             // 
             // chkOnlyDiffs
             // 
@@ -139,9 +154,9 @@ namespace DiffNamespace
             this.chkOnlyDiffs.Location = new System.Drawing.Point(9, 3);
             this.chkOnlyDiffs.Margin = new System.Windows.Forms.Padding(2);
             this.chkOnlyDiffs.Name = "chkOnlyDiffs";
-            this.chkOnlyDiffs.Size = new System.Drawing.Size(309, 26);
+            this.chkOnlyDiffs.Size = new System.Drawing.Size(372, 32);
             this.chkOnlyDiffs.TabIndex = 0;
-            this.chkOnlyDiffs.Text = "Display only the differences";
+            this.chkOnlyDiffs.Text = "Show only the differences ";
             this.chkOnlyDiffs.UseVisualStyleBackColor = true;
             // 
             // listView1
@@ -151,21 +166,20 @@ namespace DiffNamespace
             this.listView1.Location = new System.Drawing.Point(0, 0);
             this.listView1.Margin = new System.Windows.Forms.Padding(2);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(691, 522);
+            this.listView1.Size = new System.Drawing.Size(808, 694);
             this.listView1.TabIndex = 1;
             this.listView1.UseCompatibleStateImageBehavior = false;
             // 
-            // OldNewTestsDlg
+            // UpdateDlg
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(691, 639);
+            this.ClientSize = new System.Drawing.Size(808, 811);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
             this.Margin = new System.Windows.Forms.Padding(2);
-            this.Name = "OldNewTestsDlg";
+            this.Name = "UpdateDlg";
             this.Text = "Tests lists";
-            this.Load += new System.EventHandler(this.NewOldTestsDlg_Load);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.panel2.ResumeLayout(false);
@@ -186,5 +200,6 @@ namespace DiffNamespace
         private System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.CheckBox chkOnlyDiffs;
+        private System.Windows.Forms.CheckBox chkAllowDrop;
     }
 }

@@ -93,7 +93,15 @@ namespace WinFormApp
         internal void InsertEmptyMain()
         {
             this.fctb.Text =
-                @"public class Program { static public void Main(string[] args) { } }";
+@"using System;
+
+public class Program 
+{ 
+    static public void Main(string[] args) 
+    { 
+
+    } 
+}";
         }
 
         //private void textboxKeyDown(object sender, KeyEventArgs e)
@@ -121,6 +129,9 @@ namespace WinFormApp
 
         private bool AskToSaveBeforeClose()
         {
+            if (fctb.Text == "")
+                return true;
+
             if (fctb.IsChanged)
             {
                 switch (MessageBox.Show(
@@ -218,36 +229,35 @@ namespace WinFormApp
             return dialog;
         }
 
-        internal void InsertDemoCode()
-        {
-            this.fctb.Text =
-@"using System;
+//        internal void InsertDemoCode()
+//        {
+//            this.fctb.Text =
+//@"using System;
 
-public class Program
-{
-    static public void Main(string[] args)
-    {   
-        Print(""Press F5 to execute tests:\n"");
+//public class Program
+//{
+//    static public void Main(string[] args)
+//    {   
+//        Print(""Press F5 to execute tests:\n"");
 
-        Assert(""text"", ""text"");
-        Assert(""when?"", ""what?"");
-    }
+//        Assert(""text"", ""text"");
+//        Assert(""when?"", ""what?"");
+//    }
 
-    static void Assert(string exp, string act)
-    {
-        if (act.Equals(exp))
-            Print($""PASS [{exp}]==[{act}]"");
-        else
-            Print($""FAIL [{exp}]!=[{act}]"");
-    }
+//    static void Assert(string exp, string act)
+//    {
+//        if (act.Equals(exp))
+//            Print($""PASS [{exp}]==[{act}]"");
+//        else
+//            Print($""FAIL [{exp}]!=[{act}]"");
+//    }
 
-    static void Print(string str = """")
-    {
-        Console.WriteLine(str);
-    }
-}";
-
-        }
+//    static void Print(string str = """")
+//    {
+//        Console.WriteLine(str);
+//    }
+//}";
+//}
 
         internal void InsertTestCode()
         {
@@ -276,13 +286,25 @@ public class Tests
 {
     public void Execute()
     {
-        Print(""[TEST] The I test"");
-        Print(""Actual result for I test"") ;
-        Print(""[EXPC]Actual result for I test"") ;
+        Print($""[GROUP]"");
 
-        Print(""[TEST] The II test"");
-        for (int i = 1; i < 5; i++)
-            Print($""Output for II test {i}."");
+        Print(""[TEST] First test"");
+        Print(""Result for first test"") ; //<-- actual result
+        Print(""[EXPC]Result for first test"") ; //<-- expected result
+
+        Print(""[TEST] Second test"");        
+
+        Print($""[GROUP] {GetType().Name}"");
+
+        for(int i=1; i<5; i++)
+            RunTest(i);
+    }
+    
+    void RunTest(int input)
+    {
+        Print($""[TEST] Test {input}"");
+        
+        Print($""{input}"");
     }
 
     static void Print(string str = """")

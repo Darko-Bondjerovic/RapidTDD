@@ -27,9 +27,9 @@ namespace WinFormApp
         public List<EditForm> editors = new List<EditForm>();
         private string ThemeName = "VSDark"; //"Afterglow";
 
-        Worker worker = new Worker();
+        Worker worker = null;// new Worker();
         private bool run_in_progress = false;
-        private bool HasCompileErorrs = false;        
+        private bool HadCompileErorrs = false;        
 
         public MainForm()
         {
@@ -39,8 +39,7 @@ namespace WinFormApp
 
             this.IsMdiContainer = true;
             menuStrip1.MdiWindowListItem = viewsToolStripMenuItem;
-            worker.WriteInfo += WriteInfo;
-
+            
             RunSplashScreen();
         }
 
@@ -69,18 +68,23 @@ namespace WinFormApp
             MakeOutputForm();
             MakeTestForm();
 
-                // Load code, compile, run. load completions:
-                MakeNewEditor().InsertEmptyMain();
-                SplashScreen.UdpateStatusText("Load compiler...");
-                ExecuteCode();
-                SplashScreen.UdpateStatusText("Load completions...");
-                _ = worker.ReadCompletionItems(editors[0].TabName, "word").Result;
-                SplashScreen.UdpateStatusText("Done!");
-                editors[0].fctb.Text = "";
-                editors[0].fctb.IsChanged = false;
+            SplashScreen.UdpateStatusText("Load compiler...");
+            worker = new Worker();
+            worker.WriteInfo += WriteInfo;
+                        
+            MakeNewEditor();//.InsertEmptyMain();            
+            //ExecuteCode();
 
+            // without ExecuteCode this, will crash:
+            //SplashScreen.UdpateStatusText("Load completions...");
+            //_ = worker.ReadCompletionItems(editors[0].TabName, "word").Result;
+
+            SplashScreen.UdpateStatusText("Done!");
+            
+            
             this.Show();
             SplashScreen.CloseSplashScreen();
+
             this.Activate();
         }
 
@@ -374,9 +378,15 @@ namespace WinFormApp
         }
 
         private void insertDemoCodeToolStripMenuItem_Click(object sender, EventArgs e)
-        {
+        {            
+            //MakeNewEditor().InsertDemoCode();
+
             WriteInfo(EXECUTE_INFO);
-            MakeNewEditor().InsertDemoCode();
+
+            if (editors.Count > 0)
+                CurrentEditForm.InsertTestCode();
+            else
+                MakeNewEditor().InsertTestCode();
         }
 
         private void relaodToolStripMenuItem_Click(object sender, EventArgs e)
@@ -391,8 +401,7 @@ namespace WinFormApp
         }                
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //tstForm.tstPanel.ChangeTheme();
+        {            
             new AboutForm().ShowDialog();
         }
 
@@ -434,7 +443,10 @@ namespace WinFormApp
                 ShowInfoMsgBox("Tests view should be visible");
                 return;
             }
-                        
+            else
+                tstForm.tstPanel.TestsAreChanged = false;
+
+
             SetRunInProgress(true);
             try
             {               
@@ -447,7 +459,7 @@ namespace WinFormApp
                     return;
                 }    
 
-                ShowResponseToUI(response, HasCompileErorrs);
+                ShowResponseToUI(response, HadCompileErorrs);
                 DisplayErrors(null);
             }
             finally
@@ -459,7 +471,7 @@ namespace WinFormApp
         public string ExecuteSource(List<DocInfo> docs)
         {
             WriteInfo("Wait...");
-            HasCompileErorrs = false;
+            HadCompileErorrs = false;
             try
             {
                 worker.Build(docs);                
@@ -467,7 +479,7 @@ namespace WinFormApp
             }
             catch (Exception e)
             {
-                HasCompileErorrs = true;
+                HadCompileErorrs = true;
                 var result = e.Message;
                 if (e.Data != null)
                 {
@@ -482,7 +494,7 @@ namespace WinFormApp
         private void DisplayErrors(object errobj)
         {
             if (errForm != null)
-                if (!HasCompileErorrs)
+                if (!HadCompileErorrs)
                 {
                     errForm.DockState = DockState.DockBottomAutoHide;
                     //errForm.textBox.Text = "";
@@ -648,12 +660,6 @@ namespace WinFormApp
                 tstForm.tstPanel.SaveTestsAs();
         }
 
-        private void insertTestsCodeToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            WriteInfo(EXECUTE_INFO);
-            MakeNewEditor().InsertTestCode();                        
-        }
-
         private void generateMethodToolStripMenuItem_Click(object sender, EventArgs e)
         {
             GenerateCode();
@@ -742,8 +748,25 @@ namespace WinFormApp
                     MessageBoxButtons.YesNo) == DialogResult.No)
                 return;
 
-            for (int i = editors.Count - 1; i >= 0; i--)
-                editors[i].Close();
+            CloseAllDocumentsAndTestFile();
+        }
+
+        public bool IsAnythingToSave()
+        {
+            if (editors.Count == 0) 
+                return false;
+
+            foreach (var e in editors)            
+                if (e.fctb.Text != "")                
+                    return true;
+
+            return false;
+        }
+
+        public void CloseAllDocumentsAndTestFile()
+        {
+            for (int i = editors.Count-1; i >= 0; i--)                
+                editors[i].Close();           
 
             editors.Clear();
 
@@ -751,6 +774,15 @@ namespace WinFormApp
             {
                 tstForm.tstPanel.AskToSaveTestFile();
                 tstForm.tstPanel.UnloadTests();
+            }
+        }
+
+        public void CloseEmptyDocuments()
+        {
+            for (int i = editors.Count-1; i >= 0; i--)
+            {
+                if (editors[i].fctb.Text == "")                
+                    editors[i].Close();                    
             }
         }
 
@@ -765,6 +797,13 @@ namespace WinFormApp
         {
             if (tstForm != null)
                 tstForm.tstPanel.UnloadTests();
+        }
+
+        private void keepOLDTestsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (tstForm != null)
+                tstForm.tstPanel.treeView.KeepOldTests =
+                    keepOLDTestsToolStripMenuItem.Checked;
         }
     }
 }

@@ -20,6 +20,8 @@ namespace WinFormApp.TestsView
             tstPanel.UpdateTitle = DoUpdateTitle;
             this.Controls.Add(tstPanel);
 
+            tstPanel.treeView.ImageList = this.imageList1;
+
             this.FormClosing += TestsForm_FormClosing;
         }
 

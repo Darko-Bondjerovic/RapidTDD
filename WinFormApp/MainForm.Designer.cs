@@ -64,7 +64,6 @@ namespace WinFormApp
             this.splitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
             this.insertDemoCodeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.insertTestsCodeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.testsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.executeCodeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripSeparator();
@@ -75,6 +74,8 @@ namespace WinFormApp
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripSeparator();
             this.copyActToExpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyAllActToExpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem8 = new System.Windows.Forms.ToolStripSeparator();
+            this.keepOLDTestsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.displayFilesViewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripSeparator();
@@ -97,9 +98,10 @@ namespace WinFormApp
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dockpanel.BackColor = System.Drawing.Color.Gray;
-            this.dockpanel.Location = new System.Drawing.Point(0, 66);
+            this.dockpanel.Location = new System.Drawing.Point(0, 81);
+            this.dockpanel.Margin = new System.Windows.Forms.Padding(4);
             this.dockpanel.Name = "dockpanel";
-            this.dockpanel.Size = new System.Drawing.Size(800, 383);
+            this.dockpanel.Size = new System.Drawing.Size(1067, 471);
             this.dockpanel.TabIndex = 0;
             // 
             // toolStrip1
@@ -119,7 +121,7 @@ namespace WinFormApp
             this.toolActToExp});
             this.toolStrip1.Location = new System.Drawing.Point(0, 24);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(800, 39);
+            this.toolStrip1.Size = new System.Drawing.Size(1067, 39);
             this.toolStrip1.TabIndex = 2;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -223,7 +225,8 @@ namespace WinFormApp
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(800, 24);
+            this.menuStrip1.Padding = new System.Windows.Forms.Padding(8, 2, 0, 2);
+            this.menuStrip1.Size = new System.Drawing.Size(1067, 24);
             this.menuStrip1.TabIndex = 3;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -330,8 +333,7 @@ namespace WinFormApp
             this.linesNumbersToolStripMenuItem,
             this.splitToolStripMenuItem,
             this.toolStripMenuItem3,
-            this.insertDemoCodeToolStripMenuItem,
-            this.insertTestsCodeToolStripMenuItem});
+            this.insertDemoCodeToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
             this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
             this.editToolStripMenuItem.Text = "Edit";
@@ -389,15 +391,7 @@ namespace WinFormApp
             this.insertDemoCodeToolStripMenuItem.Name = "insertDemoCodeToolStripMenuItem";
             this.insertDemoCodeToolStripMenuItem.Size = new System.Drawing.Size(184, 26);
             this.insertDemoCodeToolStripMenuItem.Text = "Insert demo code";
-            this.insertDemoCodeToolStripMenuItem.Visible = false;
             this.insertDemoCodeToolStripMenuItem.Click += new System.EventHandler(this.insertDemoCodeToolStripMenuItem_Click);
-            // 
-            // insertTestsCodeToolStripMenuItem
-            // 
-            this.insertTestsCodeToolStripMenuItem.Name = "insertTestsCodeToolStripMenuItem";
-            this.insertTestsCodeToolStripMenuItem.Size = new System.Drawing.Size(184, 26);
-            this.insertTestsCodeToolStripMenuItem.Text = "Insert demo code";
-            this.insertTestsCodeToolStripMenuItem.Click += new System.EventHandler(this.insertTestsCodeToolStripMenuItem_Click);
             // 
             // testsToolStripMenuItem
             // 
@@ -410,7 +404,9 @@ namespace WinFormApp
             this.unloadTestsToolStripMenuItem,
             this.toolStripMenuItem5,
             this.copyActToExpToolStripMenuItem,
-            this.copyAllActToExpToolStripMenuItem});
+            this.copyAllActToExpToolStripMenuItem,
+            this.toolStripMenuItem8,
+            this.keepOLDTestsToolStripMenuItem});
             this.testsToolStripMenuItem.Name = "testsToolStripMenuItem";
             this.testsToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
             this.testsToolStripMenuItem.Text = "Tests";
@@ -478,6 +474,19 @@ namespace WinFormApp
             this.copyAllActToExpToolStripMenuItem.Text = "Copy for all act to exp";
             this.copyAllActToExpToolStripMenuItem.Click += new System.EventHandler(this.copyAllActToExpToolStripMenuItem_Click);
             // 
+            // toolStripMenuItem8
+            // 
+            this.toolStripMenuItem8.Name = "toolStripMenuItem8";
+            this.toolStripMenuItem8.Size = new System.Drawing.Size(186, 6);
+            // 
+            // keepOLDTestsToolStripMenuItem
+            // 
+            this.keepOLDTestsToolStripMenuItem.CheckOnClick = true;
+            this.keepOLDTestsToolStripMenuItem.Name = "keepOLDTestsToolStripMenuItem";
+            this.keepOLDTestsToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+            this.keepOLDTestsToolStripMenuItem.Text = "Keep OLD tests";
+            this.keepOLDTestsToolStripMenuItem.Click += new System.EventHandler(this.keepOLDTestsToolStripMenuItem_Click);
+            // 
             // viewsToolStripMenuItem
             // 
             this.viewsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -493,34 +502,33 @@ namespace WinFormApp
             // displayFilesViewToolStripMenuItem
             // 
             this.displayFilesViewToolStripMenuItem.Name = "displayFilesViewToolStripMenuItem";
-            this.displayFilesViewToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F10;
-            this.displayFilesViewToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
+            this.displayFilesViewToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
             this.displayFilesViewToolStripMenuItem.Text = "Files";
             this.displayFilesViewToolStripMenuItem.Click += new System.EventHandler(this.displayFilesViewToolStripMenuItem_Click);
             // 
             // toolStripMenuItem6
             // 
             this.toolStripMenuItem6.Name = "toolStripMenuItem6";
-            this.toolStripMenuItem6.Size = new System.Drawing.Size(119, 6);
+            this.toolStripMenuItem6.Size = new System.Drawing.Size(109, 6);
             // 
             // displayTestsViewToolStripMenuItem
             // 
             this.displayTestsViewToolStripMenuItem.Name = "displayTestsViewToolStripMenuItem";
-            this.displayTestsViewToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
+            this.displayTestsViewToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
             this.displayTestsViewToolStripMenuItem.Text = "Tests";
             this.displayTestsViewToolStripMenuItem.Click += new System.EventHandler(this.displayTestsViewToolStripMenuItem_Click);
             // 
             // displayOutputViewToolStripMenuItem
             // 
             this.displayOutputViewToolStripMenuItem.Name = "displayOutputViewToolStripMenuItem";
-            this.displayOutputViewToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
+            this.displayOutputViewToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
             this.displayOutputViewToolStripMenuItem.Text = "Output";
             this.displayOutputViewToolStripMenuItem.Click += new System.EventHandler(this.displayOutputViewToolStripMenuItem_Click);
             // 
             // toolStripMenuItem9
             // 
             this.toolStripMenuItem9.Name = "toolStripMenuItem9";
-            this.toolStripMenuItem9.Size = new System.Drawing.Size(119, 6);
+            this.toolStripMenuItem9.Size = new System.Drawing.Size(109, 6);
             // 
             // helpToolStripMenuItem
             // 
@@ -560,14 +568,15 @@ namespace WinFormApp
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(1067, 554);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.dockpanel);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "MainForm";
             this.Text = "Rapid TDD";
             this.toolStrip1.ResumeLayout(false);
@@ -626,7 +635,6 @@ namespace WinFormApp
         private System.Windows.Forms.ToolStripMenuItem openTestsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveTestsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem insertTestsCodeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem generateMethodToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem viewsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem displayTestsViewToolStripMenuItem;
@@ -638,6 +646,8 @@ namespace WinFormApp
         private System.Windows.Forms.ToolStripMenuItem linesNumbersToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem unloadTestsToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem6;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem8;
+        private System.Windows.Forms.ToolStripMenuItem keepOLDTestsToolStripMenuItem;
     }
 }
 
