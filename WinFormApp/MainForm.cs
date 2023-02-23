@@ -1,4 +1,5 @@
 ﻿using FastColoredTextBoxNS;
+using Microsoft.CodeAnalysis.Emit;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -23,6 +24,7 @@ namespace WinFormApp
         public TestsForm tstForm = null;
         OutputForm outForm = null;
         ErrorForm errForm = null;
+        FInvoker invForm = null;
 
         public List<EditForm> editors = new List<EditForm>();
         private string ThemeName = "VSDark"; //"Afterglow";
@@ -33,7 +35,11 @@ namespace WinFormApp
 
         public MainForm()
         {
-            InitializeComponent();            
+            InitializeComponent();
+
+            findF2.Click += FindSymbol_Click;
+            findShiftF2.Click += FindSymbol_Click;
+
             WindowState = FormWindowState.Maximized;
             this.FormClosing += MainForm_FormClosing;
 
@@ -41,6 +47,16 @@ namespace WinFormApp
             menuStrip1.MdiWindowListItem = viewsToolStripMenuItem;
             
             RunSplashScreen();
+        }
+
+        private void FindSymbol_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem temp = (ToolStripMenuItem)sender;
+            if (temp == null)
+                return;
+
+            var tag = Convert.ToInt32(temp.Tag);
+            FindSimbol(tag);            
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -65,6 +81,8 @@ namespace WinFormApp
             //dockpanel.Anchor = Top, Left, Bottom, Right
             SplashScreen.UdpateStatusText("Load views...");
             MakeErrorForm();
+            MakeInvokerForm();
+
             MakeOutputForm();
             MakeTestForm();
 
@@ -103,13 +121,30 @@ namespace WinFormApp
             {
                 errForm = new ErrorForm();
                 errForm.FormClosing += ErrForm_FormClosing;
-                errForm.WhenErrorClick = WhenErrorClick;
+                errForm.WhenErrorClick = FindPosInSource;
             }
             
             errForm.Show(this.dockpanel, DockState.DockBottomAutoHide);
         }
 
-        private void WhenErrorClick(string tabname, int location)
+        private void MakeInvokerForm()
+        {
+            if (invForm == null)
+            {
+                invForm = new FInvoker();
+                invForm.FormClosing += InvForm_FormClosing;
+                invForm.WhenReferenceClick = FindPosInSource;
+            }
+
+            invForm.Show(this.dockpanel, DockState.DockRightAutoHide);
+        }
+
+        private void InvForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            this.invForm = null;
+        }
+
+        private void FindPosInSource(string tabname, int location)
         {
             foreach(var edit in editors)
             {
@@ -598,6 +633,8 @@ namespace WinFormApp
 
             Cursor.Current = Cursors.WaitCursor;
 
+            var vertical = edit.fctb.VerticalScroll.Value;
+
             UpdateAllDocs();
             var docInfo = MakeDocInfo(edit);
             try
@@ -613,8 +650,18 @@ namespace WinFormApp
             finally
             {
                 edit.fctb.SelectionStart = position;
+                UpdateScroll(edit.fctb, vertical);
                 edit.fctb.DoCaretVisible();
                 Cursor.Current = Cursors.Default;
+            }
+        }
+
+        private void UpdateScroll(FastColoredTextBox tb, int vPos)
+        {            
+            if (vPos <= tb.VerticalScroll.Maximum)
+            {
+                tb.VerticalScroll.Value = vPos;
+                tb.UpdateScrollbars();
             }
         }
 
@@ -804,6 +851,69 @@ namespace WinFormApp
             if (tstForm != null)
                 tstForm.tstPanel.treeView.KeepOldTests =
                     keepOLDTestsToolStripMenuItem.Checked;
+        }
+
+
+        private async void FindSimbol(int tag)
+        {
+            if (editors.Count == 0)
+            {
+                ShowInfoMsgBox("No source code...");
+                return;
+            }
+
+            var edit = CurrentEditForm;
+            if (edit == null)
+                return;
+
+            var position = edit.fctb.SelectionStart;
+
+            var word = edit.fctb.SelectedText;
+            if (string.IsNullOrEmpty(word))
+            {
+                ShowInfoMsgBox("Select symbol first...");
+                return;
+            }
+
+            Cursor.Current = Cursors.WaitCursor;
+
+            UpdateAllDocs();            
+
+            var docInfo = MakeDocInfo(edit);
+            try
+            {
+                var list = await worker.FindSymbolDefinition(docInfo, position, tag);
+
+                Cursor.Current = Cursors.Default;
+
+                if (list == null)
+                    return;
+
+                if (tag == 1)
+                {
+                    if (list.Count > 0)
+                        FindPosInSource(list[0].Item1, list[0].Item2);
+                }
+                else
+                {
+                    DisplayInvokerForm(list, word);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void DisplayInvokerForm(List<Tuple<string, int>> list, string name)
+        {
+            if (list != null)
+            {
+                MakeInvokerForm();
+                invForm.Text = $"[{name} references]";                
+                invForm.DockState = DockState.DockRight;
+                invForm.DisplayReferences(list);
+            }
         }
     }
 }

@@ -159,6 +159,12 @@
     <Compile Include="FilesForm.Designer.cs">
       <DependentUpon>FilesForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="FInvoker.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FInvoker.Designer.cs">
+      <DependentUpon>FInvoker.cs</DependentUpon>
+    </Compile>
     <Compile Include="FMsgBox.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -230,21 +236,30 @@
     <Compile Include="Worker\Worker.cs" />
     <EmbeddedResource Include="AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="EditForm.resx">
       <DependentUpon>EditForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="ErrorForm.resx">
       <DependentUpon>ErrorForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="FilesForm.resx">
       <DependentUpon>FilesForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FInvoker.resx">
+      <DependentUpon>FInvoker.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FMsgBox.resx">
       <DependentUpon>FMsgBox.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -258,15 +273,19 @@
     </Compile>
     <EmbeddedResource Include="SplashForm.resx">
       <DependentUpon>SplashForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="TestsView\TestsForm.resx">
       <DependentUpon>TestsForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="TestsView\UpdateDlg.resx">
       <DependentUpon>UpdateDlg.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="TestsView\OutputForm.resx">
       <DependentUpon>OutputForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -324,6 +343,7 @@
   <ItemGroup>
     <EmbeddedResource Include="RefsForm.resx">
       <DependentUpon>RefsForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\ColorThemes.txt" />
   </ItemGroup>

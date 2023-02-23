@@ -20,7 +20,8 @@ using System.Threading.Tasks;
 
 using Microsoft.CodeAnalysis.ExtractMethod; // IExtractMethodService
 using Microsoft.CodeAnalysis.CSharp.ExtractMethod; // service
-
+using System.Xml.XPath;
+using System.Runtime.Remoting.Contexts;
 
 namespace WinFormApp
 {
@@ -399,27 +400,65 @@ namespace WinFormApp
                     $"The function lasted longer " +
                     $"than the maximum allowed time. [{vaittime} sec]");
         }
-        
+
         //public async Task<List<DocInfo>> ExtractMethod(DocInfo docinfo)
         //{            
         //    var service = new CSharpExtractMethodService() as IExtractMethodService;
         //    return await service.ExtractMethodAsync(document, default(TextSpan));
         //}
 
+        public async Task<List<Tuple<string, int>>> FindSymbolDefinition(
+                DocInfo docInfo, int position, int tag)
+        {
+            Document doc = MakeDocument(docInfo);
+            var symbol = await SymbolFinder.FindSymbolAtPositionAsync(doc, position);
+            if (symbol == null)
+                return null;
+
+            var result = new List<Tuple<string, int>>();            
+            
+            var syntaxReference = symbol.DeclaringSyntaxReferences.FirstOrDefault();
+            var declaration = syntaxReference.GetSyntax(); // <- method source code
+            var location = declaration.GetLocation();
+
+            if (tag == 1)
+            {
+                result.Add(makeTuple(location)); // source definition
+            }
+            else
+            {
+                // try to find references
+                var solution = doc.Project.Solution;
+                var callerTask = SymbolFinder.FindReferencesAsync(symbol, solution);
+                callerTask.Wait();
+                var callers = callerTask.Result;
+
+                foreach (var referenced in callers)
+                    foreach (var loc in referenced.Locations)
+                        result.Add(makeTuple(loc.Location));                
+            }
+
+            return result;
+        }
+
+        private static Tuple<string, int> makeTuple(Location location)
+        {
+            return new Tuple<string, int>(
+                location.SourceTree.FilePath,
+                location.SourceSpan.Start);
+        }
+
         public async Task<List<DocInfo>> RenameSymbol(DocInfo docInfo,
             int position, string newName)
         {
-            var result = new List<DocInfo>();
-
             Document doc = MakeDocument(docInfo);
-
             var symbol = await SymbolFinder.FindSymbolAtPositionAsync(doc, position);
-
             if (symbol == null)
-                return result;
+                return null;
 
             //https://github.com/dotnet/roslyn/blob/main/src/Workspaces/Core/Portable/FindSymbols/SymbolFinder.cs
 
+            var result = new List<DocInfo>();
             var solution = doc.Project.Solution;
 
             solution = await Renamer.RenameSymbolAsync(solution, symbol,

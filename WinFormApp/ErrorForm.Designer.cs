@@ -30,37 +30,37 @@ namespace WinFormApp
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ErrorForm));
-            this.ErrorsList = new DiffNamespace.ColoredListView();
+            this.ErrorsListView = new DiffNamespace.ColoredListView();
             this.SuspendLayout();
             // 
-            // ErrorsList
+            // ReferecesListView
             // 
-            this.ErrorsList.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
-            this.ErrorsList.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ErrorsList.BackgroundImage")));
-            this.ErrorsList.BackgroundImageTiled = true;
-            this.ErrorsList.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ErrorsList.Font = new System.Drawing.Font("Consolas", 16F);
-            this.ErrorsList.ForeColor = System.Drawing.Color.White;
-            this.ErrorsList.FullRowSelect = true;
-            this.ErrorsList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
-            this.ErrorsList.HideSelection = false;
-            this.ErrorsList.Location = new System.Drawing.Point(0, 0);
-            this.ErrorsList.MultiSelect = false;
-            this.ErrorsList.Name = "ErrorsList";
-            this.ErrorsList.OwnerDraw = true;
-            this.ErrorsList.ShowGroups = false;
-            this.ErrorsList.Size = new System.Drawing.Size(800, 450);
-            this.ErrorsList.TabIndex = 0;
-            this.ErrorsList.UseCompatibleStateImageBehavior = false;
-            this.ErrorsList.View = System.Windows.Forms.View.Details;
-            this.ErrorsList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ErrorsList_KeyDown);
+            this.ErrorsListView.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
+            this.ErrorsListView.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ErrorsList.BackgroundImage")));
+            this.ErrorsListView.BackgroundImageTiled = true;
+            this.ErrorsListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ErrorsListView.Font = new System.Drawing.Font("Consolas", 16F);
+            this.ErrorsListView.ForeColor = System.Drawing.Color.White;
+            this.ErrorsListView.FullRowSelect = true;
+            this.ErrorsListView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+            this.ErrorsListView.HideSelection = false;
+            this.ErrorsListView.Location = new System.Drawing.Point(0, 0);
+            this.ErrorsListView.MultiSelect = false;
+            this.ErrorsListView.Name = "ErrorsList";
+            this.ErrorsListView.OwnerDraw = true;
+            this.ErrorsListView.ShowGroups = false;
+            this.ErrorsListView.Size = new System.Drawing.Size(904, 525);
+            this.ErrorsListView.TabIndex = 0;
+            this.ErrorsListView.UseCompatibleStateImageBehavior = false;
+            this.ErrorsListView.View = System.Windows.Forms.View.Details;
+            this.ErrorsListView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ErrorsList_KeyDown);
             // 
             // ErrorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.ErrorsList);
+            this.ClientSize = new System.Drawing.Size(904, 525);
+            this.Controls.Add(this.ErrorsListView);
             this.Name = "ErrorForm";
             this.Text = "Errors";
             this.ResumeLayout(false);
@@ -69,6 +69,6 @@ namespace WinFormApp
 
         #endregion
 
-        public DiffNamespace.ColoredListView ErrorsList;
+        public DiffNamespace.ColoredListView ErrorsListView;
     }
 }

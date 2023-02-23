@@ -58,6 +58,8 @@ namespace WinFormApp
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.generateMethodToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.findF2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.findShiftF2 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem7 = new System.Windows.Forms.ToolStripSeparator();
             this.fontToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.linesNumbersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -98,10 +100,9 @@ namespace WinFormApp
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dockpanel.BackColor = System.Drawing.Color.Gray;
-            this.dockpanel.Location = new System.Drawing.Point(0, 81);
-            this.dockpanel.Margin = new System.Windows.Forms.Padding(4);
+            this.dockpanel.Location = new System.Drawing.Point(0, 66);
             this.dockpanel.Name = "dockpanel";
-            this.dockpanel.Size = new System.Drawing.Size(1067, 471);
+            this.dockpanel.Size = new System.Drawing.Size(800, 383);
             this.dockpanel.TabIndex = 0;
             // 
             // toolStrip1
@@ -121,7 +122,7 @@ namespace WinFormApp
             this.toolActToExp});
             this.toolStrip1.Location = new System.Drawing.Point(0, 24);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(1067, 39);
+            this.toolStrip1.Size = new System.Drawing.Size(800, 39);
             this.toolStrip1.TabIndex = 2;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -225,8 +226,7 @@ namespace WinFormApp
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Padding = new System.Windows.Forms.Padding(8, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(1067, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(800, 24);
             this.menuStrip1.TabIndex = 3;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -328,6 +328,8 @@ namespace WinFormApp
             this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.renameToolStripMenuItem,
             this.generateMethodToolStripMenuItem,
+            this.findF2,
+            this.findShiftF2,
             this.toolStripMenuItem7,
             this.fontToolStripMenuItem,
             this.linesNumbersToolStripMenuItem,
@@ -343,53 +345,69 @@ namespace WinFormApp
             this.renameToolStripMenuItem.Image = global::WinFormApp.Properties.Resources.Editing_Rename_icon;
             this.renameToolStripMenuItem.Name = "renameToolStripMenuItem";
             this.renameToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F2;
-            this.renameToolStripMenuItem.Size = new System.Drawing.Size(184, 26);
+            this.renameToolStripMenuItem.Size = new System.Drawing.Size(215, 26);
             this.renameToolStripMenuItem.Text = "Rename symbol";
             this.renameToolStripMenuItem.Click += new System.EventHandler(this.renameToolStripMenuItem_Click);
             // 
             // generateMethodToolStripMenuItem
             // 
             this.generateMethodToolStripMenuItem.Name = "generateMethodToolStripMenuItem";
-            this.generateMethodToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F12;
-            this.generateMethodToolStripMenuItem.Size = new System.Drawing.Size(184, 26);
+            this.generateMethodToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F9;
+            this.generateMethodToolStripMenuItem.Size = new System.Drawing.Size(215, 26);
             this.generateMethodToolStripMenuItem.Text = "Generate code";
             this.generateMethodToolStripMenuItem.Click += new System.EventHandler(this.generateMethodToolStripMenuItem_Click);
+            // 
+            // findF2
+            // 
+            this.findF2.Name = "findF2";
+            this.findF2.ShortcutKeys = System.Windows.Forms.Keys.F12;
+            this.findF2.Size = new System.Drawing.Size(215, 26);
+            this.findF2.Tag = "1";
+            this.findF2.Text = "Find definition";
+            // 
+            // findShiftF2
+            // 
+            this.findShiftF2.Name = "findShiftF2";
+            this.findShiftF2.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.F12)));
+            this.findShiftF2.Size = new System.Drawing.Size(215, 26);
+            this.findShiftF2.Tag = "2";
+            this.findShiftF2.Text = "Find references";
             // 
             // toolStripMenuItem7
             // 
             this.toolStripMenuItem7.Name = "toolStripMenuItem7";
-            this.toolStripMenuItem7.Size = new System.Drawing.Size(181, 6);
+            this.toolStripMenuItem7.Size = new System.Drawing.Size(212, 6);
             // 
             // fontToolStripMenuItem
             // 
             this.fontToolStripMenuItem.Name = "fontToolStripMenuItem";
-            this.fontToolStripMenuItem.Size = new System.Drawing.Size(184, 26);
+            this.fontToolStripMenuItem.Size = new System.Drawing.Size(215, 26);
             this.fontToolStripMenuItem.Text = "Font ...";
             this.fontToolStripMenuItem.Click += new System.EventHandler(this.fontToolStripMenuItem_Click);
             // 
             // linesNumbersToolStripMenuItem
             // 
             this.linesNumbersToolStripMenuItem.Name = "linesNumbersToolStripMenuItem";
-            this.linesNumbersToolStripMenuItem.Size = new System.Drawing.Size(184, 26);
+            this.linesNumbersToolStripMenuItem.Size = new System.Drawing.Size(215, 26);
             this.linesNumbersToolStripMenuItem.Text = "Line numbers";
             this.linesNumbersToolStripMenuItem.Click += new System.EventHandler(this.linesNumbersToolStripMenuItem_Click);
             // 
             // splitToolStripMenuItem
             // 
             this.splitToolStripMenuItem.Name = "splitToolStripMenuItem";
-            this.splitToolStripMenuItem.Size = new System.Drawing.Size(184, 26);
+            this.splitToolStripMenuItem.Size = new System.Drawing.Size(215, 26);
             this.splitToolStripMenuItem.Text = "Split editor";
             this.splitToolStripMenuItem.Click += new System.EventHandler(this.splitToolStripMenuItem_Click);
             // 
             // toolStripMenuItem3
             // 
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-            this.toolStripMenuItem3.Size = new System.Drawing.Size(181, 6);
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(212, 6);
             // 
             // insertDemoCodeToolStripMenuItem
             // 
             this.insertDemoCodeToolStripMenuItem.Name = "insertDemoCodeToolStripMenuItem";
-            this.insertDemoCodeToolStripMenuItem.Size = new System.Drawing.Size(184, 26);
+            this.insertDemoCodeToolStripMenuItem.Size = new System.Drawing.Size(215, 26);
             this.insertDemoCodeToolStripMenuItem.Text = "Insert demo code";
             this.insertDemoCodeToolStripMenuItem.Click += new System.EventHandler(this.insertDemoCodeToolStripMenuItem_Click);
             // 
@@ -568,15 +586,14 @@ namespace WinFormApp
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1067, 554);
+            this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.dockpanel);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "MainForm";
             this.Text = "Rapid TDD";
             this.toolStrip1.ResumeLayout(false);
@@ -648,6 +665,8 @@ namespace WinFormApp
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem6;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem8;
         private System.Windows.Forms.ToolStripMenuItem keepOLDTestsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem findF2;
+        private System.Windows.Forms.ToolStripMenuItem findShiftF2;
     }
 }
 

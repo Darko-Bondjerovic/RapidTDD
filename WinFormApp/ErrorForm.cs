@@ -13,35 +13,35 @@ namespace WinFormApp
         public ErrorForm()
         {
             InitializeComponent();
-            ErrorsList.MouseDoubleClick += ListView1_MouseDoubleClick;
+            ErrorsListView.Click += ErrorsListView_Click;
 
             ContextMenu cntxMnu = new ContextMenu();
             var item = cntxMnu.MenuItems.Add("Copy text");
             item.Click += CopyItemClick;
-            ErrorsList.ContextMenu = cntxMnu;
+            ErrorsListView.ContextMenu = cntxMnu;
         }
 
-        private void CopyItemClick(object sender, EventArgs e)
+        private void ErrorsListView_Click(object sender, EventArgs e)
         {
-            CopyToCliboard();
-        }
-
-        private void ListView1_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
-            var item = ErrorsList.SelectedItems[0];
+            var item = ErrorsListView.SelectedItems[0];
             if (item != null && item.Tag != null)
             {
                 var data = (Tuple<string, int, string>)item.Tag;
                 WhenErrorClick(data.Item1, data.Item2);
             }
-        }         
+        }
+
+        private void CopyItemClick(object sender, EventArgs e)
+        {
+            CopyToCliboard();
+        }      
 
         public void ShowErrors(object errobj)
         {
             if (errobj == null)
                 return;
 
-            ErrorsList.Items.Clear();
+            ErrorsListView.Items.Clear();
 
             var errors = errobj as List<Tuple<string, int, string>>;
 
@@ -51,14 +51,14 @@ namespace WinFormApp
                 var title = $"[{e.Item1}] [{e.Item2}] {e.Item3}\n";
                 using (Graphics graphics = Graphics.FromImage(new Bitmap(1, 1)))
                 {
-                    SizeF size = graphics.MeasureString(title, ErrorsList.Font);
+                    SizeF size = graphics.MeasureString(title, ErrorsListView.Font);
                     max = Math.Max(max, (int)size.Width);
                 }
                 
-                ErrorsList.Items.Add(new ListViewItem(title) { Tag = e });
+                ErrorsListView.Items.Add(new ListViewItem(title) { Tag = e });
             }
 
-            ErrorsList.Columns[0].Width = max;
+            ErrorsListView.Columns[0].Width = max;
         }
 
         private void ErrorsList_KeyDown(object sender, KeyEventArgs e)
@@ -69,9 +69,9 @@ namespace WinFormApp
 
         private void CopyToCliboard()
         {
-            if (ErrorsList.SelectedItems.Count > 0)
+            if (ErrorsListView.SelectedItems.Count > 0)
             {
-                var item = ErrorsList.SelectedItems[0];
+                var item = ErrorsListView.SelectedItems[0];
                 Clipboard.SetText(item.Text);
             }
         }

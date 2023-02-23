@@ -20,7 +20,7 @@ namespace DiffNamespace
 
             this.FullRowSelect = true;
 
-            this.View = View.Details;
+            this.View = System.Windows.Forms.View.Details;
             this.Columns.Add(new ColumnHeader() { Width = 1900 });
             HeaderStyle = ColumnHeaderStyle.None;
             this.MultiSelect = false;
@@ -35,40 +35,13 @@ namespace DiffNamespace
             UpdateBackground();
         }        
 
-
-   //     [DllImport("user32.dll")]
-   //     [return: MarshalAs(UnmanagedType.Bool)]
-   //     private static extern bool ShowScrollBar(IntPtr hWnd, int wBar, bool bShow);
-   //     protected override void WndProc(ref System.Windows.Forms.Message m)
-   //     {
-   //         //private enum ScrollBarDirection
-   //         //{
-   //         //    SB_HORZ = 0,
-   //         //    SB_VERT = 1,
-   //         //    SB_CTL = 2,
-   //         //    SB_BOTH = 3
-   //         //}
-
-   //         // Call to unmanaged WinAPI:
-   //         //ShowScrollBar(this.Handle, (int)ScrollBarDirection.SB_HORZ, false);
-            
-			//ShowScrollBar(this.Handle, 0, false);
-   //         base.WndProc(ref m);
-   //     }
-
         protected virtual void ListViewDrawItem(object sender, DrawListViewItemEventArgs e)
         {
             e.Item.ForeColor = Color.White;
             e.DrawText();
-
-            if (e.Item.Selected)
-                e.Graphics.DrawRectangle(penBlue, e.Bounds);
-        }
-
-        public void ChangeTheme()
-        {
-            darkTheme = !darkTheme;
-            UpdateBackground();
+                        
+            if (!(sender as ListView).Focused  &&  e.Item.Selected)            
+                e.Graphics.DrawRectangle(penBlue, e.Bounds); 
         }
 
         private void UpdateBackground()
