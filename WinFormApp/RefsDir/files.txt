@@ -1,0 +1,9 @@
+System.Windows.Forms.dll
+System.Drawing.dll
+System.Web.dll
+System.Xml.Linq.dll
+System.Xml.dll
+Dapper.dll
+System.Data.dll
+System.Data.SqlClient.dll
+netstandard.dll
