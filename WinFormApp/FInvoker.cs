@@ -23,12 +23,12 @@ namespace WinFormApp
             var item = ReferecesListView.SelectedItems[0];
             if (item != null && item.Tag != null)
             {
-                var data = (Tuple<string, int>)item.Tag;
+                var data = (Tuple<string, int, string>)item.Tag;
                 WhenReferenceClick(data.Item1, data.Item2);
             }
         }
 
-        public void DisplayReferences(List<Tuple<string, int>> list)
+        public void DisplayReferences(List<Tuple<string, int, string>> list)
         {
             if (list == null)
                 return;
@@ -36,7 +36,7 @@ namespace WinFormApp
             ReferecesListView.Items.Clear();
             foreach (var item in list)
             {
-                var title = $"[{item.Item1}] [{item.Item2}]\n";
+                var title = $"[{item.Item1}] [{item.Item2}] {item.Item3} ";
                 ReferecesListView.Items.Add(new ListViewItem(title) { Tag = item });
             }
         }

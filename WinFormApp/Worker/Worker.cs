@@ -407,7 +407,14 @@ namespace WinFormApp
         //    return await service.ExtractMethodAsync(document, default(TextSpan));
         //}
 
-        public async Task<List<Tuple<string, int>>> FindSymbolDefinition(
+        static SyntaxNode GetNode(SyntaxTree tree, int lineNumber)
+        {
+            var lineSpan = tree.GetText().Lines[lineNumber - 1].Span;
+            return tree.GetRoot().DescendantNodes(lineSpan)
+                .First(n => lineSpan.Contains(n.Span));
+        }
+
+        public async Task<List<Tuple<string, int, string>>> FindSymbolDefinition(
                 DocInfo docInfo, int position, int tag)
         {
             Document doc = MakeDocument(docInfo);
@@ -415,7 +422,7 @@ namespace WinFormApp
             if (symbol == null)
                 return null;
 
-            var result = new List<Tuple<string, int>>();            
+            var result = new List<Tuple<string, int, string>>();            
             
             var syntaxReference = symbol.DeclaringSyntaxReferences.FirstOrDefault();
             var declaration = syntaxReference.GetSyntax(); // <- method source code
@@ -423,7 +430,7 @@ namespace WinFormApp
 
             if (tag == 1)
             {
-                result.Add(makeTuple(location)); // source definition
+                result.Add(makeTuple(location, "")); // source definition
             }
             else
             {
@@ -434,18 +441,31 @@ namespace WinFormApp
                 var callers = callerTask.Result;
 
                 foreach (var referenced in callers)
+                {
                     foreach (var loc in referenced.Locations)
-                        result.Add(makeTuple(loc.Location));                
+                    {
+                        var text = "";
+                        var tree = loc.Location.SourceTree;
+                        if (tree != null)
+                        {
+                            var fullText = tree.GetText();
+                            var linePos = loc.Location.GetLineSpan().StartLinePosition.Line;
+                            text = fullText.Lines[linePos].ToString();                            
+                        }                        
+
+                        result.Add(makeTuple(loc.Location, text));
+                    }
+                }
             }
 
             return result;
         }
 
-        private static Tuple<string, int> makeTuple(Location location)
+        private static Tuple<string, int, string> makeTuple(Location location, string text)
         {
-            return new Tuple<string, int>(
+            return new Tuple<string, int, string>(
                 location.SourceTree.FilePath,
-                location.SourceSpan.Start);
+                location.SourceSpan.Start, text);
         }
 
         public async Task<List<DocInfo>> RenameSymbol(DocInfo docInfo,

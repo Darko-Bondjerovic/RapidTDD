@@ -136,7 +136,7 @@ namespace WinFormApp
                 invForm.WhenReferenceClick = FindPosInSource;
             }
 
-            invForm.Show(this.dockpanel, DockState.DockRightAutoHide);
+            invForm.Show(this.dockpanel, DockState.DockBottomAutoHide);
         }
 
         private void InvForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -905,13 +905,13 @@ namespace WinFormApp
             }
         }
 
-        private void DisplayInvokerForm(List<Tuple<string, int>> list, string name)
+        private void DisplayInvokerForm(List<Tuple<string, int, string>> list, string name)
         {
             if (list != null)
             {
                 MakeInvokerForm();
                 invForm.Text = $"[{name} references]";                
-                invForm.DockState = DockState.DockRight;
+                invForm.DockState = DockState.DockBottom;
                 invForm.DisplayReferences(list);
             }
         }
