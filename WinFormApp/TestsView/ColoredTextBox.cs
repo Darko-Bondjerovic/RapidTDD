@@ -107,7 +107,9 @@ namespace DiffNamespace
 
     public class ColoredTextBox : FixedTextBox
     {
-        private Font FONT = new Font("Consolas", 16);
+        const string arrow = "\u2936";
+
+        private Font FONT = new Font("Consolas", 14);
 
         public static readonly Color DARK_COLOR = ColorTranslator.FromHtml("#211E1E");
 
@@ -137,6 +139,7 @@ namespace DiffNamespace
 
         public ColoredTextBox()
         {
+            this.SelectionFont = FONT;            
             this.Font = FONT;
             this.WordWrap = false;
             UpdateColors();            
@@ -144,7 +147,7 @@ namespace DiffNamespace
 
         public void ClearColors(TestItem tst)
         {
-            Text = tst.exp;
+            Text = tst.exp;            
             Select(0, Text.Length);
             UpdateColors();            
         }
@@ -188,14 +191,20 @@ namespace DiffNamespace
                 SelectionBackColor = color;
             }
 
+            // somethimes, textbox return to Calibri font?! :\ 
+            this.SelectAll();
+            this.SelectionFont = FONT;
+            this.Font = FONT;
+
             this.SelectionStart = 0;
-        }
+        }        
 
         private static string SetSpecialChars(string txt)
         {
             //https://www.fileformat.info/info/unicode/font/consolas/grid.htm
 
             /*
+             *  ⏎  U+23CE return symbol
                 ⤶ U+2936 ARROW POINTING DOWNWARDS THEN CURVING LEFTWARDS
                 ↵ U+21B5 DOWNWARDS ARROW WITH CORNER LEFTWARDS
                 ⏎ U+23CE RETURN SYMBOL
@@ -218,7 +227,7 @@ namespace DiffNamespace
             */
 
             txt = txt.Replace("\r", "");
-            txt = txt.Replace("\n", "↵\n");
+            txt = txt.Replace("\n", $"{arrow}\n");
             return txt;
         }
 

@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using WeifenLuo.WinFormsUI.Docking;
+﻿using WeifenLuo.WinFormsUI.Docking;
 
 namespace WinFormApp.TestsView
 {
@@ -15,13 +6,19 @@ namespace WinFormApp.TestsView
     {
         public OutputForm()
         {
-            InitializeComponent();            
+            InitializeComponent();
+            this.CloseButtonVisible = false;
         }
 
         internal void ShowResponseToUI(string response)
         {
             outTextBox.Text = response;
             outTextBox.PaintFailPassLines();
+        }
+
+        private void OutputForm_FormClosing(object sender, System.Windows.Forms.FormClosingEventArgs e)
+        {
+            e.Cancel = true;
         }
     }
 }

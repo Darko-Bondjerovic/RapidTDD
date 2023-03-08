@@ -9,7 +9,7 @@ namespace WinFormApp
         {
             InitializeComponent();
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.ShowInTaskbar = false;
+            //this.ShowInTaskbar = false;
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)

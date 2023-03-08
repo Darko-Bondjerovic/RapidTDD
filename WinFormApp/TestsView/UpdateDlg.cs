@@ -13,7 +13,7 @@ namespace DiffNamespace
         {
             InitializeComponent();
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.ShowInTaskbar = false;
+            //this.ShowInTaskbar = false;
 
             this.upd = upd;
 

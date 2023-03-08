@@ -71,7 +71,6 @@ namespace WinFormApp
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripSeparator();
             this.openTestsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveTestsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.saveAsToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.unloadTestsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripSeparator();
             this.copyActToExpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -345,7 +344,7 @@ namespace WinFormApp
             this.renameToolStripMenuItem.Image = global::WinFormApp.Properties.Resources.Editing_Rename_icon;
             this.renameToolStripMenuItem.Name = "renameToolStripMenuItem";
             this.renameToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F2;
-            this.renameToolStripMenuItem.Size = new System.Drawing.Size(215, 26);
+            this.renameToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
             this.renameToolStripMenuItem.Text = "Rename symbol";
             this.renameToolStripMenuItem.Click += new System.EventHandler(this.renameToolStripMenuItem_Click);
             // 
@@ -353,7 +352,7 @@ namespace WinFormApp
             // 
             this.generateMethodToolStripMenuItem.Name = "generateMethodToolStripMenuItem";
             this.generateMethodToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F9;
-            this.generateMethodToolStripMenuItem.Size = new System.Drawing.Size(215, 26);
+            this.generateMethodToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
             this.generateMethodToolStripMenuItem.Text = "Generate code";
             this.generateMethodToolStripMenuItem.Click += new System.EventHandler(this.generateMethodToolStripMenuItem_Click);
             // 
@@ -361,7 +360,7 @@ namespace WinFormApp
             // 
             this.findF2.Name = "findF2";
             this.findF2.ShortcutKeys = System.Windows.Forms.Keys.F12;
-            this.findF2.Size = new System.Drawing.Size(215, 26);
+            this.findF2.Size = new System.Drawing.Size(211, 22);
             this.findF2.Tag = "1";
             this.findF2.Text = "Find definition";
             // 
@@ -369,45 +368,45 @@ namespace WinFormApp
             // 
             this.findShiftF2.Name = "findShiftF2";
             this.findShiftF2.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.F12)));
-            this.findShiftF2.Size = new System.Drawing.Size(215, 26);
+            this.findShiftF2.Size = new System.Drawing.Size(211, 22);
             this.findShiftF2.Tag = "2";
             this.findShiftF2.Text = "Find references";
             // 
             // toolStripMenuItem7
             // 
             this.toolStripMenuItem7.Name = "toolStripMenuItem7";
-            this.toolStripMenuItem7.Size = new System.Drawing.Size(212, 6);
+            this.toolStripMenuItem7.Size = new System.Drawing.Size(208, 6);
             // 
             // fontToolStripMenuItem
             // 
             this.fontToolStripMenuItem.Name = "fontToolStripMenuItem";
-            this.fontToolStripMenuItem.Size = new System.Drawing.Size(215, 26);
+            this.fontToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
             this.fontToolStripMenuItem.Text = "Font ...";
             this.fontToolStripMenuItem.Click += new System.EventHandler(this.fontToolStripMenuItem_Click);
             // 
             // linesNumbersToolStripMenuItem
             // 
             this.linesNumbersToolStripMenuItem.Name = "linesNumbersToolStripMenuItem";
-            this.linesNumbersToolStripMenuItem.Size = new System.Drawing.Size(215, 26);
+            this.linesNumbersToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
             this.linesNumbersToolStripMenuItem.Text = "Line numbers";
             this.linesNumbersToolStripMenuItem.Click += new System.EventHandler(this.linesNumbersToolStripMenuItem_Click);
             // 
             // splitToolStripMenuItem
             // 
             this.splitToolStripMenuItem.Name = "splitToolStripMenuItem";
-            this.splitToolStripMenuItem.Size = new System.Drawing.Size(215, 26);
+            this.splitToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
             this.splitToolStripMenuItem.Text = "Split editor";
             this.splitToolStripMenuItem.Click += new System.EventHandler(this.splitToolStripMenuItem_Click);
             // 
             // toolStripMenuItem3
             // 
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-            this.toolStripMenuItem3.Size = new System.Drawing.Size(212, 6);
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(208, 6);
             // 
             // insertDemoCodeToolStripMenuItem
             // 
             this.insertDemoCodeToolStripMenuItem.Name = "insertDemoCodeToolStripMenuItem";
-            this.insertDemoCodeToolStripMenuItem.Size = new System.Drawing.Size(215, 26);
+            this.insertDemoCodeToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
             this.insertDemoCodeToolStripMenuItem.Text = "Insert demo code";
             this.insertDemoCodeToolStripMenuItem.Click += new System.EventHandler(this.insertDemoCodeToolStripMenuItem_Click);
             // 
@@ -418,7 +417,6 @@ namespace WinFormApp
             this.toolStripMenuItem4,
             this.openTestsToolStripMenuItem,
             this.saveTestsToolStripMenuItem,
-            this.saveAsToolStripMenuItem1,
             this.unloadTestsToolStripMenuItem,
             this.toolStripMenuItem5,
             this.copyActToExpToolStripMenuItem,
@@ -434,74 +432,67 @@ namespace WinFormApp
             this.executeCodeToolStripMenuItem.Image = global::WinFormApp.Properties.Resources.Next;
             this.executeCodeToolStripMenuItem.Name = "executeCodeToolStripMenuItem";
             this.executeCodeToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.executeCodeToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+            this.executeCodeToolStripMenuItem.Size = new System.Drawing.Size(193, 26);
             this.executeCodeToolStripMenuItem.Text = "Execute";
             this.executeCodeToolStripMenuItem.Click += new System.EventHandler(this.executeCodeToolStripMenuItem_Click);
             // 
             // toolStripMenuItem4
             // 
             this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-            this.toolStripMenuItem4.Size = new System.Drawing.Size(186, 6);
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(190, 6);
             // 
             // openTestsToolStripMenuItem
             // 
             this.openTestsToolStripMenuItem.Name = "openTestsToolStripMenuItem";
-            this.openTestsToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
-            this.openTestsToolStripMenuItem.Text = "Load tests";
+            this.openTestsToolStripMenuItem.Size = new System.Drawing.Size(193, 26);
+            this.openTestsToolStripMenuItem.Text = "Load test file";
             this.openTestsToolStripMenuItem.Click += new System.EventHandler(this.openTestsToolStripMenuItem_Click);
             // 
             // saveTestsToolStripMenuItem
             // 
             this.saveTestsToolStripMenuItem.Name = "saveTestsToolStripMenuItem";
-            this.saveTestsToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
-            this.saveTestsToolStripMenuItem.Text = "Save tests";
+            this.saveTestsToolStripMenuItem.Size = new System.Drawing.Size(193, 26);
+            this.saveTestsToolStripMenuItem.Text = "Save test file";
             this.saveTestsToolStripMenuItem.Click += new System.EventHandler(this.saveTestsToolStripMenuItem_Click);
-            // 
-            // saveAsToolStripMenuItem1
-            // 
-            this.saveAsToolStripMenuItem1.Name = "saveAsToolStripMenuItem1";
-            this.saveAsToolStripMenuItem1.Size = new System.Drawing.Size(189, 22);
-            this.saveAsToolStripMenuItem1.Text = "Save tests as";
-            this.saveAsToolStripMenuItem1.Click += new System.EventHandler(this.saveAsToolStripMenuItem1_Click);
             // 
             // unloadTestsToolStripMenuItem
             // 
             this.unloadTestsToolStripMenuItem.Name = "unloadTestsToolStripMenuItem";
-            this.unloadTestsToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
-            this.unloadTestsToolStripMenuItem.Text = "Unload tests";
+            this.unloadTestsToolStripMenuItem.Size = new System.Drawing.Size(193, 26);
+            this.unloadTestsToolStripMenuItem.Text = "Unload test file";
             this.unloadTestsToolStripMenuItem.Click += new System.EventHandler(this.unloadTestsToolStripMenuItem_Click);
             // 
             // toolStripMenuItem5
             // 
             this.toolStripMenuItem5.Name = "toolStripMenuItem5";
-            this.toolStripMenuItem5.Size = new System.Drawing.Size(186, 6);
+            this.toolStripMenuItem5.Size = new System.Drawing.Size(190, 6);
             // 
             // copyActToExpToolStripMenuItem
             // 
             this.copyActToExpToolStripMenuItem.Image = global::WinFormApp.Properties.Resources.duplicate_48;
             this.copyActToExpToolStripMenuItem.Name = "copyActToExpToolStripMenuItem";
             this.copyActToExpToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F8;
-            this.copyActToExpToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+            this.copyActToExpToolStripMenuItem.Size = new System.Drawing.Size(193, 26);
             this.copyActToExpToolStripMenuItem.Text = "Copy act to exp";
             this.copyActToExpToolStripMenuItem.Click += new System.EventHandler(this.copyActToExpToolStripMenuItem_Click);
             // 
             // copyAllActToExpToolStripMenuItem
             // 
             this.copyAllActToExpToolStripMenuItem.Name = "copyAllActToExpToolStripMenuItem";
-            this.copyAllActToExpToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+            this.copyAllActToExpToolStripMenuItem.Size = new System.Drawing.Size(193, 26);
             this.copyAllActToExpToolStripMenuItem.Text = "Copy for all act to exp";
             this.copyAllActToExpToolStripMenuItem.Click += new System.EventHandler(this.copyAllActToExpToolStripMenuItem_Click);
             // 
             // toolStripMenuItem8
             // 
             this.toolStripMenuItem8.Name = "toolStripMenuItem8";
-            this.toolStripMenuItem8.Size = new System.Drawing.Size(186, 6);
+            this.toolStripMenuItem8.Size = new System.Drawing.Size(190, 6);
             // 
             // keepOLDTestsToolStripMenuItem
             // 
             this.keepOLDTestsToolStripMenuItem.CheckOnClick = true;
             this.keepOLDTestsToolStripMenuItem.Name = "keepOLDTestsToolStripMenuItem";
-            this.keepOLDTestsToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+            this.keepOLDTestsToolStripMenuItem.Size = new System.Drawing.Size(193, 26);
             this.keepOLDTestsToolStripMenuItem.Text = "Keep OLD tests";
             this.keepOLDTestsToolStripMenuItem.Click += new System.EventHandler(this.keepOLDTestsToolStripMenuItem_Click);
             // 
@@ -521,7 +512,7 @@ namespace WinFormApp
             // 
             this.displayFilesViewToolStripMenuItem.Name = "displayFilesViewToolStripMenuItem";
             this.displayFilesViewToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
-            this.displayFilesViewToolStripMenuItem.Text = "Files";
+            this.displayFilesViewToolStripMenuItem.Text = "Project";
             this.displayFilesViewToolStripMenuItem.Click += new System.EventHandler(this.displayFilesViewToolStripMenuItem_Click);
             // 
             // toolStripMenuItem6
@@ -651,7 +642,6 @@ namespace WinFormApp
         private System.Windows.Forms.ToolStripMenuItem splitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openTestsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveTestsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem generateMethodToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem viewsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem displayTestsViewToolStripMenuItem;

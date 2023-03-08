@@ -8,11 +8,11 @@ namespace WinFormApp
 {
     public partial class ErrorForm : DockContent
     {
-        internal Action<string, int> WhenErrorClick = (s, e) => { };
+        internal Action<Jump> WhenErrorClick = (o) => { };
 
         public ErrorForm()
         {
-            InitializeComponent();
+            InitializeComponent();           
             ErrorsListView.Click += ErrorsListView_Click;
 
             ContextMenu cntxMnu = new ContextMenu();
@@ -25,10 +25,7 @@ namespace WinFormApp
         {
             var item = ErrorsListView.SelectedItems[0];
             if (item != null && item.Tag != null)
-            {
-                var data = (Tuple<string, int, string>)item.Tag;
-                WhenErrorClick(data.Item1, data.Item2);
-            }
+                WhenErrorClick((Jump)item.Tag);            
         }
 
         private void CopyItemClick(object sender, EventArgs e)
@@ -43,12 +40,12 @@ namespace WinFormApp
 
             ErrorsListView.Items.Clear();
 
-            var errors = errobj as List<Tuple<string, int, string>>;
+            var errors = errobj as List<Jump>;
 
             var max = 1900;
             foreach (var e in errors)
             {
-                var title = $"[{e.Item1}] [{e.Item2}] {e.Item3}\n";
+                var title = $"[{e.File}] [{e.Spot}] {e.Desc}";
                 using (Graphics graphics = Graphics.FromImage(new Bitmap(1, 1)))
                 {
                     SizeF size = graphics.MeasureString(title, ErrorsListView.Font);

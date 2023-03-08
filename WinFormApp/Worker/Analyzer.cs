@@ -241,7 +241,7 @@ namespace WinFormApp
         private void FindMethod()
         {
             //read from document: tree.GetRoot:
-            //SyntaxNode root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            //SyntaxNode RpdPath = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
             //https://stackoverflow.com/questions/55118805/extract-called-method-information-using-roslyn
 
@@ -350,8 +350,9 @@ namespace WinFormApp
 
             var newClassStr = "using System;\n\n" + newClass.ToFullString().Replace(BODYLINE, "//");
 
-            if (!FMsgBox.Show($"Generate class in new file?\n\n{newClassStr}", true))
-                return "";
+            if (MessageBox.Show($"Generate class in new file?\n\n{newClassStr}", 
+               "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == 
+                DialogResult.No) return "";
 
             return newClassStr;
                 

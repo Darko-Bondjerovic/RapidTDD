@@ -153,17 +153,23 @@
     <Compile Include="ErrorForm.Designer.cs">
       <DependentUpon>ErrorForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="FilesForm.cs">
+    <Compile Include="ProjectDlg.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FilesForm.Designer.cs">
-      <DependentUpon>FilesForm.cs</DependentUpon>
+    <Compile Include="ProjectDlg.Designer.cs">
+      <DependentUpon>ProjectDlg.cs</DependentUpon>
     </Compile>
-    <Compile Include="FInvoker.cs">
+    <Compile Include="ProjectForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FInvoker.Designer.cs">
-      <DependentUpon>FInvoker.cs</DependentUpon>
+    <Compile Include="ProjectForm.Designer.cs">
+      <DependentUpon>ProjectForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InvokerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InvokerForm.Designer.cs">
+      <DependentUpon>InvokerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="FMsgBox.cs">
       <SubType>Form</SubType>
@@ -202,6 +208,9 @@
     <Compile Include="TestsView\TestsTreeView.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="TestsView\TwoColsListView.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="TestsView\UpdateDlg.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -232,6 +241,7 @@
     <Compile Include="Worker\Completions.cs" />
     <Compile Include="Worker\ConsoleOutput.cs" />
     <Compile Include="Worker\Discoverer.cs" />
+    <Compile Include="Worker\Jump.cs" />
     <Compile Include="Worker\Utils.cs" />
     <Compile Include="Worker\Worker.cs" />
     <EmbeddedResource Include="AboutForm.resx">
@@ -246,12 +256,15 @@
       <DependentUpon>ErrorForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="FilesForm.resx">
-      <DependentUpon>FilesForm.cs</DependentUpon>
+    <EmbeddedResource Include="ProjectDlg.resx">
+      <DependentUpon>ProjectDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ProjectForm.resx">
+      <DependentUpon>ProjectForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="FInvoker.resx">
-      <DependentUpon>FInvoker.cs</DependentUpon>
+    <EmbeddedResource Include="InvokerForm.resx">
+      <DependentUpon>InvokerForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FMsgBox.resx">
       <DependentUpon>FMsgBox.cs</DependentUpon>

@@ -16,9 +16,7 @@ namespace DiffNamespace
                 _testsfn = value;
                 UpdateTitle(_testsfn);
             }
-        }
-
-        public bool TestsAreChanged { get; set; } = false;
+        }        
 
         public Action<string> UpdateTitle = (s) => { };
 
@@ -36,11 +34,7 @@ namespace DiffNamespace
 
         internal void AskToSaveTestFile()
         {
-            if (TestsFileName != "" && TestsAreChanged)
-                if (DialogResult.Yes == MessageBox.Show(
-                        $"Save tests file?\n{TestsFileName}", "Confirm",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Information))
+            if (treeView.TestsAreChanged)                
                 SaveTests();            
         }
 
@@ -303,27 +297,29 @@ namespace DiffNamespace
         private SaveFileDialog CreateSaveDialog()
         {
             SaveFileDialog dialog = new SaveFileDialog();
+            dialog.Title = "Save test file";
             dialog.Filter = TESTS_FILTER;
             dialog.DefaultExt = "tst";
             dialog.AddExtension = false;
             return dialog;
         }
 
-        internal void SaveTests()
+        internal bool SaveTests()
         {
             if (!treeView.HaveTests())
-                return;
-
+                return true;
+            
             if (TestsFileName == "")
-            {
+            { 
                 SaveFileDialog saveDlg = CreateSaveDialog();
                 if (saveDlg.ShowDialog() == DialogResult.OK)
-                    TestsFileName = saveDlg.FileName;
+                    TestsFileName = saveDlg.FileName;                
+                else
+                    return false;
             }
-            else
-            {
-                treeView.SaveTests(TestsFileName);
-            }
+            
+            treeView.SaveTests(TestsFileName);                
+            return true;
         }
 
         private OpenFileDialog CreateOpenDialog()
@@ -355,7 +351,6 @@ namespace DiffNamespace
         {
             var newTests = Parser.Find(response);
             treeView.DisplayTests(newTests);
-            TestsAreChanged = true;
         }
         
         private TestItem GetSelectedTest()
@@ -367,7 +362,6 @@ namespace DiffNamespace
         {
             ActualTextBox.ChangeTheme();
             ExpectedTextBox.ChangeTheme();
-            //TestsListView.ChangeTheme(); //todo
         }
 
         private void txtSource_vScroll(Message message)
@@ -461,18 +455,7 @@ namespace DiffNamespace
                 ExpectedTextBox.SelectionLength = 0;
                 ExpectedTextBox.ScrollToCaret();
             }
-        }        
-
-        internal void SaveTestsAs()
-        {
-            SaveFileDialog saveDlg = CreateSaveDialog();
-            saveDlg.FileName = TestsFileName;
-            if (saveDlg.ShowDialog() == DialogResult.OK)
-            {
-                TestsFileName = saveDlg.FileName;
-                treeView.SaveTests(TestsFileName);
-            }
-        }
+        } 
 
         internal void UnloadTests()
         {

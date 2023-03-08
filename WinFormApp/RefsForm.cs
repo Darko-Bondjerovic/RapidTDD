@@ -8,7 +8,7 @@ namespace WinFormApp
 {
     public partial class RefsForm : Form
     {
-        static string refsFile = @"..\..\RefsDir\files.txt";
+        static string refsFile = @"..\..\RefsDir\references.txt";
 
         static List<string> paths = new List<string>();
 
@@ -18,7 +18,7 @@ namespace WinFormApp
         {
             InitializeComponent();
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.ShowInTaskbar = false;
+            //this.ShowInTaskbar = false;
 
             LoadPaths();
             LoadFiles();

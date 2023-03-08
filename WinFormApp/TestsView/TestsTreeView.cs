@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Xml.Linq;
@@ -12,15 +11,18 @@ namespace DiffNamespace
 {
     public class TestsTreeView : TreeView
     {
-        public static Font FontReg = new Font("Consolas", 16);
-        public static Font FontBold = new Font("Consolas", 16, FontStyle.Bold);
+        private string oldTestText = "";
+
+        public static Font FontReg = new Font("Consolas", 14);
+        public static Font FontBold = new Font("Consolas", 14, FontStyle.Bold);
 
         public static readonly Color DARK_COLOR = ColorTranslator.FromHtml("#211E1E");
 
         public List<TestItem> currTests = new List<TestItem>();
 
-
         public bool KeepOldTests = false;
+
+        public bool TestsAreChanged { get; set; } = false;
 
         public enum Filter { all, pass, fail };
 
@@ -67,7 +69,16 @@ namespace DiffNamespace
             RestoreSelIndx();
             
             DoUpdateUI();
-        }       
+
+            CheckIfTestsIsChanged();
+        }
+
+        private void CheckIfTestsIsChanged()
+        {
+            var currTestText = MakeTestFileContext().ToString();
+            TestsAreChanged = oldTestText != currTestText;
+            oldTestText = currTestText;
+        }
 
         private void UpdateTests(List<TestItem> newTests)
         {
@@ -190,7 +201,7 @@ namespace DiffNamespace
         {
             if (this.SelectedNode == null)
             {
-                //try to select 1. node in list if exists
+                //try to select 1. node in list if fileExists
                 if (this.Nodes.Count > 0)
                     this.SelectedNode = this.Nodes[0];
             }
@@ -365,29 +376,35 @@ namespace DiffNamespace
         
         public void SaveTests(string fileName)
         {
+            XDocument xdoc = MakeTestFileContext();
+            xdoc.Save(fileName);
+        }
+
+        public XDocument MakeTestFileContext()
+        {
             var xdoc = new XDocument();
-            
+
             var root = new XElement("Tests");
             xdoc.Add(root);
-            
-            foreach(var item in currTests)
+
+            foreach (var item in currTests)
             {
                 var el = item.ToXml();
                 root.Add(el);
-                
+
                 if (item is GroupItem)
-                    foreach(var t in (item as GroupItem).Tests)
+                    foreach (var t in (item as GroupItem).Tests)
                         el.Add(t.ToXml());
             }
-                        
-            Console.WriteLine(xdoc.ToString());
-            
-            xdoc.Save(fileName);
+
+            return xdoc;
         }
-        
+
         public void UnloadTests()
         {
             this.Nodes.Clear();
+            this.TestsAreChanged = false;
+            this.currTests = new List<TestItem>();
         }
     }
 }

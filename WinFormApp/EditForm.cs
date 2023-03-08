@@ -12,6 +12,12 @@ namespace WinFormApp
         public static Font FONT_FOR_SOURCE = 
             new Font("Consolas", 18, FontStyle.Regular);
 
+        public Action<EditForm> WhenClosingEditor = edt => { };
+
+        public Action<EditForm> WhenHiddingEditor = edt => { };
+
+
+
         public object FileName { get; internal set; } = null;
         public string TabName
         {
@@ -19,8 +25,7 @@ namespace WinFormApp
             set { Text = value; }
         }
 
-        public static bool CancelClosing { get; internal set; } = false;
-        public bool DoBuild { get; internal set; } = true;
+        public bool DoBuild { get; internal set; } = true;        
 
         private bool SplitEdit = true;
 
@@ -33,6 +38,12 @@ namespace WinFormApp
             SplitEditors();
 
             FormClosing += EditForm_FormClosing;
+            VisibleChanged += EditForm_VisibleChanged;
+        }
+
+        private void EditForm_VisibleChanged(object sender, EventArgs e)
+        {
+            WhenHiddingEditor(this);
         }
 
         private void ConnectTwoEditors()
@@ -99,9 +110,11 @@ public class Program
 { 
     static public void Main(string[] args) 
     { 
-
+        Console.WriteLine(""Hi!"");
     } 
 }";
+
+            this.fctb.IsChanged = false;
         }
 
         //private void textboxKeyDown(object sender, KeyEventArgs e)
@@ -117,7 +130,7 @@ public class Program
         //    //        fctbox.SelectedText);
         //}
 
-        public Action<EditForm> WhenClosingEditor = edt => { };
+        
 
         private void EditForm_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -312,6 +325,8 @@ public class Tests
         Console.WriteLine(str);
     }
 }";
+
+            this.fctb.IsChanged = false;
 
         }
     }

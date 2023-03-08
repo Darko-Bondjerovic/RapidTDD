@@ -22,6 +22,8 @@ using Microsoft.CodeAnalysis.ExtractMethod; // IExtractMethodService
 using Microsoft.CodeAnalysis.CSharp.ExtractMethod; // service
 using System.Xml.XPath;
 using System.Runtime.Remoting.Contexts;
+using System.Runtime.CompilerServices;
+using System.Windows.Forms;
 
 namespace WinFormApp
 {
@@ -339,12 +341,16 @@ namespace WinFormApp
                         diagnostic.IsWarningAsError ||
                         diagnostic.Severity == DiagnosticSeverity.Error);
 
-                    var errors = new List<Tuple<string, int, string>>();
+                    var errors = new List<Jump>();
                     foreach (Diagnostic fail in failures)
                     {
-                        errors.Add(Tuple.Create(
-                            fail.Location.SourceTree.FilePath,
-                            fail.Location.SourceSpan.Start,
+                        var filePath = "";
+                        var loc = fail.Location;
+                        if (loc.SourceTree != null)
+                            filePath = loc.SourceTree.FilePath ?? "";                            
+
+                        errors.Add(new Jump(
+                            filePath, loc.SourceSpan.Start,
                             $"{fail.Id} {fail.GetMessage()}"));
                     }
 
@@ -365,9 +371,63 @@ namespace WinFormApp
 
                 object program = Activator.CreateInstance(main.MainClass);
                 main.MainMethod.Invoke(program, new object[] { args });
+
+                //TODO : find variable static public COCVG
+                //ReadAssemblyMethods();
             }
 
             return _consoleOutput.GetOutput();
+        }
+
+        //https://stackoverflow.com/questions/1196991/get-property-value-from-string-using-reflection
+
+        public static object GetPropValue(object src, string propName)
+        {
+            return src.GetType().GetProperty(propName).GetValue(src, null);
+        }
+
+        public static T GetPropertyValue<T>(object obj, string propName) 
+        { 
+            return (T)obj.GetType().GetProperty(propName).GetValue(obj, null); 
+        }
+
+        private bool IsTypeOfType(Type type)
+        {
+            return typeof(Type).IsAssignableFrom(type);
+        }
+
+        private void ReadAssemblyMethods()
+        {
+            // BindingFlags.Instance | BindingFlags.DeclaredOnly 
+            const BindingFlags flags = BindingFlags.Public | BindingFlags.Static;
+
+            var s = "";
+            try
+            {
+                foreach (Type tpy in assembly.GetTypes())
+                {
+                    var prop = tpy.GetProperties(flags);
+                    foreach (var info in prop)
+                    {
+                        var full = tpy.GetType().FullName;
+
+                        //var typeName = Convert.ChangeType(, prop.PropertyType);
+
+                        s += $"{full} {info.Name}\n";
+                        if (info.Name == "BigList")
+                        {
+                            var values = (List<int>)info.GetValue(null);
+                            foreach (var v in values)
+                                s += $"{v}\n";
+                        }
+                    }                    
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            MessageBox.Show(s);
         }
 
         public string RunCodeThread(string[] args)
@@ -414,7 +474,7 @@ namespace WinFormApp
                 .First(n => lineSpan.Contains(n.Span));
         }
 
-        public async Task<List<Tuple<string, int, string>>> FindSymbolDefinition(
+        public async Task<List<Jump>> FindSymbolDefinition(
                 DocInfo docInfo, int position, int tag)
         {
             Document doc = MakeDocument(docInfo);
@@ -422,15 +482,18 @@ namespace WinFormApp
             if (symbol == null)
                 return null;
 
-            var result = new List<Tuple<string, int, string>>();            
+            var result = new List<Jump>();            
             
             var syntaxReference = symbol.DeclaringSyntaxReferences.FirstOrDefault();
-            var declaration = syntaxReference.GetSyntax(); // <- method source code
+            if (syntaxReference == null)
+                return result;
+
+            var declaration = syntaxReference.GetSyntax(); // <- prop source code
             var location = declaration.GetLocation();
 
             if (tag == 1)
             {
-                result.Add(makeTuple(location, "")); // source definition
+                result.Add(makeJump(location, "")); // source definition
             }
             else
             {
@@ -453,7 +516,7 @@ namespace WinFormApp
                             text = fullText.Lines[linePos].ToString();                            
                         }                        
 
-                        result.Add(makeTuple(loc.Location, text));
+                        result.Add(makeJump(loc.Location, text));
                     }
                 }
             }
@@ -461,10 +524,9 @@ namespace WinFormApp
             return result;
         }
 
-        private static Tuple<string, int, string> makeTuple(Location location, string text)
+        private static Jump makeJump(Location location, string text)
         {
-            return new Tuple<string, int, string>(
-                location.SourceTree.FilePath,
+            return new Jump(location.SourceTree.FilePath,
                 location.SourceSpan.Start, text);
         }
 
@@ -476,7 +538,7 @@ namespace WinFormApp
             if (symbol == null)
                 return null;
 
-            //https://github.com/dotnet/roslyn/blob/main/src/Workspaces/Core/Portable/FindSymbols/SymbolFinder.cs
+            //https://github.com/dotnet/roslyn/blob/proj/src/Workspaces/Core/Portable/FindSymbols/SymbolFinder.cs
 
             var result = new List<DocInfo>();
             var solution = doc.Project.Solution;

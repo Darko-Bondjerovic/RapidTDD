@@ -1,8 +1,8 @@
 ﻿using FastColoredTextBoxNS;
-using Microsoft.CodeAnalysis.Emit;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
@@ -21,15 +21,16 @@ namespace WinFormApp
 
         Font font = EditForm.FONT_FOR_SOURCE;
         int NewFilesCount = 1;
-        public TestsForm tstForm = null;
+        public TestsForm testForm = null;
         OutputForm outForm = null;
         ErrorForm errForm = null;
-        FInvoker invForm = null;
+        InvokerForm invForm = null;
+        ProjectForm projForm = null;
 
         public List<EditForm> editors = new List<EditForm>();
         private string ThemeName = "VSDark"; //"Afterglow";
 
-        Worker worker = null;// new Worker();
+        Worker worker = null;
         private bool run_in_progress = false;
         private bool HadCompileErorrs = false;        
 
@@ -62,9 +63,9 @@ namespace WinFormApp
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             // if we close all files, check for test file!
-            if (tstForm != null)
+            if (testForm != null)
                 if (editors.Count == 0)
-                    tstForm.tstPanel.AskToSaveTestFile();
+                    testForm.tstPanel.AskToSaveTestFile();
         }
 
         private void RunSplashScreen()
@@ -73,37 +74,41 @@ namespace WinFormApp
 
             SplashScreen.UdpateStatusText("Load themes...");
             FillThemes();
-
             dockpanel.Theme = new VS2015BlueTheme(); // new VS2015DarkTheme();
             dockpanel.DocumentStyle = DocumentStyle.DockingMdi;
 
-            //In properties or LoadForm, set all 4 anchors;
-            //dockpanel.Anchor = Top, Left, Bottom, Right
-            SplashScreen.UdpateStatusText("Load views...");
-            MakeErrorForm();
-            MakeInvokerForm();
-
+            SplashScreen.UdpateStatusText("Create forms...");
             MakeOutputForm();
-            MakeTestForm();
+            MakeTestForm();            
 
             SplashScreen.UdpateStatusText("Load compiler...");
             worker = new Worker();
             worker.WriteInfo += WriteInfo;
-                        
-            MakeNewEditor();//.InsertEmptyMain();            
-            //ExecuteCode();
-
-            // without ExecuteCode this, will crash:
-            //SplashScreen.UdpateStatusText("Load completions...");
-            //_ = worker.ReadCompletionItems(editors[0].TabName, "word").Result;
 
             SplashScreen.UdpateStatusText("Done!");
-            
-            
+
+            MakeNewEditor().InsertTestCode();
+
             this.Show();
             SplashScreen.CloseSplashScreen();
 
             this.Activate();
+        }
+
+        private void MakeProjectForm()
+        {
+            if (projForm == null)
+            {
+                projForm = new ProjectForm(this, testForm);
+                projForm.WhenClosingForm = ClosingProjectForm;
+                projForm.Show(this.dockpanel, DockState.DockRightAutoHide);
+            }
+        }
+
+        public void ClosingProjectForm()
+        {            
+            //SaveAllFiles();
+            projForm = null;
         }
 
         private void StartSplashInThread()
@@ -120,8 +125,8 @@ namespace WinFormApp
             if (errForm == null)
             {
                 errForm = new ErrorForm();
-                errForm.FormClosing += ErrForm_FormClosing;
                 errForm.WhenErrorClick = FindPosInSource;
+                errForm.FormClosing += ErrForm_FormClosing;
             }
             
             errForm.Show(this.dockpanel, DockState.DockBottomAutoHide);
@@ -131,9 +136,9 @@ namespace WinFormApp
         {
             if (invForm == null)
             {
-                invForm = new FInvoker();
-                invForm.FormClosing += InvForm_FormClosing;
+                invForm = new InvokerForm();
                 invForm.WhenReferenceClick = FindPosInSource;
+                invForm.FormClosing += InvForm_FormClosing;
             }
 
             invForm.Show(this.dockpanel, DockState.DockBottomAutoHide);
@@ -144,14 +149,14 @@ namespace WinFormApp
             this.invForm = null;
         }
 
-        private void FindPosInSource(string tabname, int location)
+        private void FindPosInSource(Jump jump)
         {
             foreach(var edit in editors)
             {
-                if (edit.TabName == tabname)
+                if (edit.TabName == jump.File)
                 {
                     edit.Activate();
-                    edit.fctb.SelectionStart = location;
+                    edit.fctb.SelectionStart = jump.Spot;
                     edit.fctb.DoCaretVisible();
                     edit.fctb.Focus();
                     break;
@@ -211,8 +216,14 @@ namespace WinFormApp
         {
             var edt = IsFileAlreadyOpen(fileName);
 
-            if (edt == null)
+            if (!File.Exists(fileName))
             {
+                MessageBox.Show($"File does not exists:\n{fileName}");
+                return null;
+            }
+
+            if (edt == null)
+            {   
                 edt = MakeNewEditor();
                 edt.LoadFile(fileName);
             }
@@ -245,50 +256,43 @@ namespace WinFormApp
         private void MakeOutputForm()
         {
             if (outForm == null)
-            {
                 outForm = new OutputForm();
-                outForm.FormClosing += OutForm_FormClosing;
-            }
 
             outForm.Show(this.dockpanel, DockState.DockLeft);
         }
 
-        private void OutForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            outForm = null;
-        }
-
         private void MakeTestForm()
         {
-            if (tstForm == null)
-            {
-                tstForm = new TestsForm();
-                tstForm.WhenFormClosing += TestFormClosing;
-            }
-            
-            tstForm.Show(this.dockpanel, DockState.DockLeft);
-        }
+            if (testForm == null)
+                testForm = new TestsForm();                            
 
-        public void TestFormClosing()
-        {            
-            tstForm = null;
-        }        
+            testForm.Show(this.dockpanel, DockState.DockLeft);
+        }
 
         private void newToolStripMenuItem_Click(object sender, System.EventArgs e)
         {
             MakeNewEditor();
         }
 
-        private EditForm MakeNewEditor()
+        public EditForm MakeNewEditor()
         {
             var edt = new EditForm();            
             edt.TabName = $"new {NewFilesCount++}";
             editors.Add(edt);
             edt.Show(this.dockpanel, DockState.Document);
             edt.WhenClosingEditor += DoClosingEditor;
+            edt.WhenHiddingEditor += DoHiddingEditor;
             edt.SetTheme(this.ThemeName);            
             MakeCompletonPopup(edt);
+
+            UpdateProjFormUI();
+
             return edt;
+        }
+
+        private void DoHiddingEditor(EditForm obj)
+        {
+            UpdateProjFormUI();
         }
 
         private void DoClosingEditor(EditForm edt)
@@ -296,6 +300,14 @@ namespace WinFormApp
             if (edt == null)
                 return;
 
+            RemoveEditor(edt);             
+        }
+
+        public void RemoveEditor(EditForm edt)
+        {
+            if (edt == null)
+                return;
+            
             editors.Remove(edt);
             dockpanel.Controls.Remove(edt);
         }
@@ -305,7 +317,7 @@ namespace WinFormApp
             OpenFile();
         }
 
-        private void OpenFile()
+        public void OpenFile()
         {
             var openDlg = new OpenFileDialog();
             openDlg.Multiselect = true;
@@ -316,6 +328,8 @@ namespace WinFormApp
                 WriteInfo(EXECUTE_INFO);
                 foreach (var file in openDlg.FileNames)
                     OpenFileInEditor(file);
+
+                UpdateProjFormUI();
             }
         }
 
@@ -346,6 +360,8 @@ namespace WinFormApp
             var curr = CurrentEditForm;
             if (curr != null)
                 curr.SaveFile(saveAs);
+
+            UpdateProjFormUI();
         }
 
         private static void ShowInfoMsgBox(string msg)
@@ -381,15 +397,20 @@ namespace WinFormApp
         private void saveAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SaveAllFiles();
+            UpdateProjFormUI();
+            if (projForm != null)
+                projForm.SaveRpdFile();
         }
 
-        public void SaveAllFiles()
+        public bool SaveAllFiles()
         {
+            var allSaved = true;
             foreach (EditForm frm in editors)
-                frm.SaveFile();
+                allSaved &= frm.SaveFile();
 
-            if (tstForm != null)
-                SaveTestFile();
+            allSaved &= SaveTestFile();
+
+            return allSaved;
         }
 
         private void toolNew_Click(object sender, EventArgs e)
@@ -418,9 +439,10 @@ namespace WinFormApp
 
             WriteInfo(EXECUTE_INFO);
 
-            if (editors.Count > 0)
+            var c = CurrentEditForm;
+            if (c != null && string.IsNullOrWhiteSpace(c.fctb.Text))
                 CurrentEditForm.InsertTestCode();
-            else
+            else            
                 MakeNewEditor().InsertTestCode();
         }
 
@@ -472,15 +494,6 @@ namespace WinFormApp
                 ShowInfoMsgBox("Nothing to run, no source code...");
                 return;
             }
-
-            if (tstForm == null)
-            {
-                ShowInfoMsgBox("Tests view should be visible");
-                return;
-            }
-            else
-                tstForm.tstPanel.TestsAreChanged = false;
-
 
             SetRunInProgress(true);
             try
@@ -547,11 +560,8 @@ namespace WinFormApp
         {
             if (err) return;
 
-            if (tstForm != null)
-                tstForm.tstPanel.ShowResponseInUI(response);
-
-            if (outForm != null)
-                outForm.ShowResponseToUI(response);
+            testForm.tstPanel.ShowResponseInUI(response);
+            outForm.ShowResponseToUI(response);
         }
 
         public List<DocInfo> GetSources()
@@ -571,14 +581,12 @@ namespace WinFormApp
 
         private void copyActToExpToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (tstForm != null)
-                tstForm.tstPanel.CopyTextActToExp();
+            testForm.tstPanel.CopyTextActToExp();
         }
 
         private void copyAllActToExpToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (tstForm != null)
-                tstForm.tstPanel.CopyAllActToExp();
+            testForm.tstPanel.CopyAllActToExp();
         }
 
         private void MakeCompletonPopup(EditForm edt)
@@ -674,37 +682,25 @@ namespace WinFormApp
 
         private void openTestsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (tstForm != null)
-                tstForm.tstPanel.LoadTests();
-        }
-
-        public void LoadTestsFromFile(string filename)
-        {
-            if (tstForm != null)
-                tstForm.tstPanel.LoadTestsFromFile(filename);
+            testForm.tstPanel.LoadTests();
+            UpdateProjFormUI();
         }
 
         private void saveTestsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SaveTestFile();
+            UpdateProjFormUI();
         }
 
-        void SaveTestFile()
+        bool SaveTestFile()
         {
-            if (tstForm != null)
-                tstForm.tstPanel.SaveTests();
+            return testForm.tstPanel.SaveTests();
         }
 
         private void addReferencesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (new RefsForm().ShowDialog() == DialogResult.OK)            
                 worker.AddThirdPartyRefs();
-        }
-
-        private void saveAsToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            if (tstForm != null)
-                tstForm.tstPanel.SaveTestsAs();
         }
 
         private void generateMethodToolStripMenuItem_Click(object sender, EventArgs e)
@@ -779,8 +775,9 @@ namespace WinFormApp
 
         private void displayFilesViewToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var tsfn = tstForm == null ? "" : tstForm.tstPanel.TestsFileName;
-            FilesForm.ShowDialog(this, editors, tsfn);                
+            MakeProjectForm();
+            projForm.DockState = DockState.DockRight;
+            new ProjectDlg(projForm).ShowDialog();
         }
 
         private void closeAllToolStripMenuItem_Click(object sender, EventArgs e)
@@ -812,16 +809,20 @@ namespace WinFormApp
 
         public void CloseAllDocumentsAndTestFile()
         {
-            for (int i = editors.Count-1; i >= 0; i--)                
-                editors[i].Close();           
+            for (int i = editors.Count - 1; i >= 0; i--)
+                editors[i].Close();
 
             editors.Clear();
 
-            if (tstForm != null)
-            {
-                tstForm.tstPanel.AskToSaveTestFile();
-                tstForm.tstPanel.UnloadTests();
-            }
+            testForm.UnloadTestFile();
+
+            UpdateProjFormUI();
+        }        
+
+        private void UpdateProjFormUI()
+        {
+            if (projForm != null)                         
+                projForm.UpdateFormUI();
         }
 
         public void CloseEmptyDocuments()
@@ -842,14 +843,16 @@ namespace WinFormApp
 
         private void unloadTestsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (tstForm != null)
-                tstForm.tstPanel.UnloadTests();
+            if (testForm != null)
+                testForm.UnloadTestFile();
+
+            UpdateProjFormUI();
         }
 
         private void keepOLDTestsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (tstForm != null)
-                tstForm.tstPanel.treeView.KeepOldTests =
+            if (testForm != null)
+                testForm.tstPanel.treeView.KeepOldTests =
                     keepOLDTestsToolStripMenuItem.Checked;
         }
 
@@ -892,7 +895,7 @@ namespace WinFormApp
                 if (tag == 1)
                 {
                     if (list.Count > 0)
-                        FindPosInSource(list[0].Item1, list[0].Item2);
+                        FindPosInSource(list[0]);
                 }
                 else
                 {
@@ -905,7 +908,7 @@ namespace WinFormApp
             }
         }
 
-        private void DisplayInvokerForm(List<Tuple<string, int, string>> list, string name)
+        private void DisplayInvokerForm(List<Jump> list, string name)
         {
             if (list != null)
             {

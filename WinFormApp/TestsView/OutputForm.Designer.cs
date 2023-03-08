@@ -36,12 +36,14 @@ namespace WinFormApp.TestsView
             // 
             this.outTextBox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
             this.outTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.outTextBox.Font = new System.Drawing.Font("Consolas", 16F);
             this.outTextBox.ForeColor = System.Drawing.Color.White;
             this.outTextBox.Location = new System.Drawing.Point(0, 0);
             this.outTextBox.Name = "outTextBox";
             this.outTextBox.Size = new System.Drawing.Size(800, 450);
             this.outTextBox.TabIndex = 0;
             this.outTextBox.Text = "";
+            this.outTextBox.WordWrap = false;
             // 
             // OutputForm
             // 
@@ -51,6 +53,7 @@ namespace WinFormApp.TestsView
             this.Controls.Add(this.outTextBox);
             this.Name = "OutputForm";
             this.Text = "Output";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.OutputForm_FormClosing);
             this.ResumeLayout(false);
 
         }
