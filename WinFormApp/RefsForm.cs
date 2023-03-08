@@ -8,7 +8,11 @@ namespace WinFormApp
 {
     public partial class RefsForm : Form
     {
-        static string refsFile = @"..\..\RefsDir\references.txt";
+        #if DEBUG
+            static string refsFile = @"..\..\RefsDir\references.txt";
+        #else
+            static string refsFile = @"RefsDir\references.txt";
+        #endif
 
         static List<string> paths = new List<string>();
 
@@ -39,8 +43,18 @@ namespace WinFormApp
 
         private static void LoadFiles()
         {
-            if (File.Exists(refsFile))            
+            if (File.Exists(refsFile))
                 files = File.ReadAllLines(refsFile).ToList();
+            else
+            {
+                files.Add("System.Windows.Forms.dll");                
+                files.Add("System.Drawing.dll");
+                files.Add("System.Web.dll");
+                files.Add("System.Xml.Linq.dll");                
+                files.Add("System.Data.dll");
+                files.Add("System.Data.SqlClient.dll");
+                files.Add("netstandard.dll");
+            }
         }
 
         private static void LoadPaths()
