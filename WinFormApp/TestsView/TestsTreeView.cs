@@ -358,13 +358,21 @@ namespace DiffNamespace
         {
             var xdoc = XDocument.Load(fileName);
             var gxml = xdoc.Root.Elements("GroupItem");
-            
+
+            var result = new List<TestItem>();
+
             if (gxml.Count() == 0)
-                return LoadTests(xdoc.Descendants("TestItem"));
-            
-            return gxml.Select( g => new GroupItem(g) 
-                  { Tests = LoadTests(g.Descendants("TestItem")) })
-                  .ToList<TestItem>();
+                result = LoadTests(xdoc.Descendants("TestItem"));
+            else                           
+                result = LoadTests(xdoc.Root.Elements("TestItem"));                        
+
+            var groups = gxml.Select( g => new GroupItem(g) { 
+                  Tests = LoadTests(g.Descendants("TestItem")) 
+                  }).ToList<TestItem>();
+
+            result.AddRange(groups);
+
+            return result;
         }
               
         public List<TestItem> LoadTestsFromFile(string fileName)

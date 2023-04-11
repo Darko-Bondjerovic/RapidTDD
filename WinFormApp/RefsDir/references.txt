@@ -1,13 +1,16 @@
+System.ComponentModel.Composition.dll
 System.Windows.Forms.dll
+System.Xml.Linq.dll
 Microsoft.Playwright.dll
 System.Drawing.dll
 System.Web.dll
-System.Xml.Linq.dll
+System.XML.dll
 Dapper.dll
 System.Data.dll
 System.Data.SqlClient.dll
 netstandard.dll
 Humanizer.dll
+System.Xml.Linq.dll
 Microsoft.Bcl.AsyncInterfaces.dll
 Microsoft.CodeAnalysis.AnalyzerUtilities.dll
 Microsoft.CodeAnalysis.CSharp.dll

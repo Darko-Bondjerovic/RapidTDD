@@ -1,6 +1,8 @@
 ﻿using FastColoredTextBoxNS;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace WinFormApp
@@ -20,7 +22,7 @@ namespace WinFormApp
             this.form = form;
         }
 
-        public async Task<List<string>> GetItems(string docname, string word)
+        public async Task<List<Tuple<string,string>>> GetItems(string docname, string word)
         {
             return await work.ReadCompletionItems(docname, word);
         }
@@ -33,7 +35,7 @@ namespace WinFormApp
 
             RunUpdateDocs();            
 
-            List<string> methods = null;
+            List<Tuple<string,string>> methods = null;
             try
             {
                 methods = GetItems(docname, word).Result;
@@ -42,9 +44,14 @@ namespace WinFormApp
             }
             catch { }
 
-            foreach (var name in methods)
-                yield return
-                    new MethodAutocompleteItem(name);
+            foreach (var data in methods.Distinct())
+            {                
+                yield return new MethodAutocompleteItem(data.Item1)
+                {                 
+                    ToolTipTitle = data.Item2,
+                    ToolTipText = data.Item2
+                };
+            }
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()

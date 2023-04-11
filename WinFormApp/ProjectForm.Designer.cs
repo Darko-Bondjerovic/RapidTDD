@@ -35,14 +35,16 @@ namespace WinFormApp
             this.pnlTestFile = new System.Windows.Forms.TextBox();
             this.pnlListView = new System.Windows.Forms.Panel();
             this.panel5 = new System.Windows.Forms.Panel();
-            this.listView1 = new DiffNamespace.TwoColsListView();
-            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.panel4 = new System.Windows.Forms.Panel();
             this.btnNew = new System.Windows.Forms.Button();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnRemove = new System.Windows.Forms.Button();
             this.btnAdd = new System.Windows.Forms.Button();
+            this.listView1 = new DiffNamespace.ColsListView();
+            this.colBuild = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colShow = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colFileName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colFullPath = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.pnlListView.SuspendLayout();
             this.panel5.SuspendLayout();
             this.panel4.SuspendLayout();
@@ -78,37 +80,6 @@ namespace WinFormApp
             this.panel5.Name = "panel5";
             this.panel5.Size = new System.Drawing.Size(679, 705);
             this.panel5.TabIndex = 10;
-            // 
-            // listView1
-            // 
-            this.listView1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("listView1.BackgroundImage")));
-            this.listView1.BackgroundImageTiled = true;
-            this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1,
-            this.columnHeader2});
-            this.listView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listView1.Font = new System.Drawing.Font("Consolas", 14F);
-            this.listView1.FullRowSelect = true;
-            this.listView1.HideSelection = false;
-            this.listView1.Location = new System.Drawing.Point(0, 0);
-            this.listView1.MultiSelect = false;
-            this.listView1.Name = "listView1";
-            this.listView1.OwnerDraw = true;
-            this.listView1.ShowGroups = false;
-            this.listView1.Size = new System.Drawing.Size(679, 675);
-            this.listView1.TabIndex = 2;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.View = System.Windows.Forms.View.Details;
-            // 
-            // columnHeader1
-            // 
-            this.columnHeader1.Text = "File name";
-            this.columnHeader1.Width = 1800;
-            // 
-            // columnHeader2
-            // 
-            this.columnHeader2.Text = "Full path";
-            this.columnHeader2.Width = 0;
             // 
             // panel4
             // 
@@ -154,7 +125,7 @@ namespace WinFormApp
             this.btnRemove.TabIndex = 5;
             this.btnRemove.Text = "- Remove";
             this.btnRemove.UseVisualStyleBackColor = true;
-            this.btnRemove.Visible = false;            
+            this.btnRemove.Visible = false;
             // 
             // btnAdd
             // 
@@ -166,6 +137,49 @@ namespace WinFormApp
             this.btnAdd.Text = "+ Open";
             this.btnAdd.UseVisualStyleBackColor = true;
             this.btnAdd.Visible = false;
+            // 
+            // listView1
+            // 
+            this.listView1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("listView1.BackgroundImage")));
+            this.listView1.BackgroundImageTiled = true;
+            this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.colBuild,
+            this.colShow,
+            this.colFileName,
+            this.colFullPath});
+            this.listView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listView1.Font = new System.Drawing.Font("Consolas", 14F);
+            this.listView1.FullRowSelect = true;
+            this.listView1.HideSelection = false;
+            this.listView1.Location = new System.Drawing.Point(0, 0);
+            this.listView1.MultiSelect = false;
+            this.listView1.Name = "listView1";
+            this.listView1.OwnerDraw = true;
+            this.listView1.ShowGroups = false;
+            this.listView1.Size = new System.Drawing.Size(679, 675);
+            this.listView1.TabIndex = 2;
+            this.listView1.UseCompatibleStateImageBehavior = false;
+            this.listView1.View = System.Windows.Forms.View.Details;
+            // 
+            // colBuild
+            // 
+            this.colBuild.Text = "Build";
+            this.colBuild.Width = 120;
+            // 
+            // colShow
+            // 
+            this.colShow.Text = "Show";
+            this.colShow.Width = 120;
+            // 
+            // colFileName
+            // 
+            this.colFileName.Text = "File name";
+            this.colFileName.Width = 1800;
+            // 
+            // colFullPath
+            // 
+            this.colFullPath.Text = "FullPath";
+            this.colFullPath.Width = 0;
             // 
             // ProjectForm
             // 
@@ -193,8 +207,10 @@ namespace WinFormApp
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnNew;
         private System.Windows.Forms.Button btnAdd;
-        private TwoColsListView listView1;
-        private System.Windows.Forms.ColumnHeader columnHeader1;
-        private System.Windows.Forms.ColumnHeader columnHeader2;
+        private ColsListView listView1;
+        private System.Windows.Forms.ColumnHeader colBuild;
+        private System.Windows.Forms.ColumnHeader colShow;
+        private System.Windows.Forms.ColumnHeader colFileName;
+        private System.Windows.Forms.ColumnHeader colFullPath;
     }
 }

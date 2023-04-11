@@ -15,6 +15,9 @@ namespace WinFormApp
             InitializeComponent();           
             ErrorsListView.Click += ErrorsListView_Click;
 
+            ErrorsListView.Columns.Add(new ColumnHeader() { Width = 1900 });
+            ErrorsListView.HeaderStyle = ColumnHeaderStyle.None;
+
             ContextMenu cntxMnu = new ContextMenu();
             var item = cntxMnu.MenuItems.Add("Copy text");
             item.Click += CopyItemClick;

@@ -43,9 +43,6 @@ namespace DiffNamespace
 
         public ColoredListView() : base()
         {            
-            this.Columns.Add(new ColumnHeader() { Width = 1900 });
-            HeaderStyle = ColumnHeaderStyle.None;
-            
             this.DrawItem += ListViewDrawItem;
         }
 

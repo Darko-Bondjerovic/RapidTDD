@@ -18,12 +18,11 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.CodeAnalysis.ExtractMethod; // IExtractMethodService
-using Microsoft.CodeAnalysis.CSharp.ExtractMethod; // service
-using System.Xml.XPath;
-using System.Runtime.Remoting.Contexts;
-using System.Runtime.CompilerServices;
-using System.Windows.Forms;
+//using Microsoft.CodeAnalysis.ExtractMethod; // IExtractMethodService
+//using Microsoft.CodeAnalysis.CSharp.ExtractMethod; // service
+//using System.Xml.XPath;
+//using System.Runtime.Remoting.Contexts;
+//using System.Runtime.CompilerServices;
 
 namespace WinFormApp
 {
@@ -52,6 +51,8 @@ namespace WinFormApp
         //Install-Package Microsoft.CodeAnalysis.CSharp.Features -Version 3.9.0        
 
         //private readonly CompositionHost _compositionContext;
+
+        public bool FindCC = false;
 
         public static string TargetOfInvocation = "Exception has been thrown by the target of an invocation";
 
@@ -112,6 +113,8 @@ namespace WinFormApp
 
         public Action<string> WriteInfo = (s) => { };
 
+        public bool DoCoverage = false;
+        public HashSet<MarkInfo> CCList = new HashSet<MarkInfo>();
 
         public Worker()
         {
@@ -247,7 +250,7 @@ namespace WinFormApp
             return project.Documents.FirstOrDefault(d => d.Name.Equals(full));
         }
 
-        public async Task<List<string>> ReadCompletionItems(string docname, string word)
+        public async Task<List<Tuple<string,string>>> ReadCompletionItems(string docname, string word)
         {
             //Document doc = MakeDocument(docInfo);
 
@@ -258,16 +261,20 @@ namespace WinFormApp
 
             var completionService = CompletionService.GetService(doc);
             var results = await completionService.GetCompletionsAsync(doc, position);
+            
 
-            var list = new List<string>();
+            var list = new List<Tuple<string, string>>();
             if (results == null)
                 return list;
 
-            foreach (var i in results.Items)
-                list.Add(i.DisplayText);
+            foreach (var item in results.Items)
+            {
+                var desc = await completionService.GetDescriptionAsync(doc, item);
+                list.Add(new Tuple<string,string>( item.DisplayText, desc.Text));
+            }
 
             return list;
-        }
+        }        
 
         private Document MakeDocument(DocInfo docInfo)
         {
@@ -371,9 +378,19 @@ namespace WinFormApp
 
                 object program = Activator.CreateInstance(main.MainClass);
                 main.MainMethod.Invoke(program, new object[] { args });
+            }
 
-                //TODO : find variable static public COCVG
-                //ReadAssemblyMethods();
+            if (DoCoverage)
+            {                
+                CCList = new HashSet<MarkInfo>();
+                
+                var dict = Discoverer.FindCCSpanList(assembly);
+                if (dict != null)
+                {
+                    foreach (var l in dict)                                            
+                        foreach (var v in l.Value)
+                            CCList.Add(new MarkInfo(l.Key, v));                    
+                }
             }
 
             return _consoleOutput.GetOutput();
@@ -384,50 +401,6 @@ namespace WinFormApp
         public static object GetPropValue(object src, string propName)
         {
             return src.GetType().GetProperty(propName).GetValue(src, null);
-        }
-
-        public static T GetPropertyValue<T>(object obj, string propName) 
-        { 
-            return (T)obj.GetType().GetProperty(propName).GetValue(obj, null); 
-        }
-
-        private bool IsTypeOfType(Type type)
-        {
-            return typeof(Type).IsAssignableFrom(type);
-        }
-
-        private void ReadAssemblyMethods()
-        {
-            // BindingFlags.Instance | BindingFlags.DeclaredOnly 
-            const BindingFlags flags = BindingFlags.Public | BindingFlags.Static;
-
-            var s = "";
-            try
-            {
-                foreach (Type tpy in assembly.GetTypes())
-                {
-                    var prop = tpy.GetProperties(flags);
-                    foreach (var info in prop)
-                    {
-                        var full = tpy.GetType().FullName;
-
-                        //var typeName = Convert.ChangeType(, prop.PropertyType);
-
-                        s += $"{full} {info.Name}\n";
-                        if (info.Name == "BigList")
-                        {
-                            var values = (List<int>)info.GetValue(null);
-                            foreach (var v in values)
-                                s += $"{v}\n";
-                        }
-                    }                    
-                }
-            }
-            catch (Exception)
-            {
-            }
-
-            MessageBox.Show(s);
         }
 
         public string RunCodeThread(string[] args)
@@ -465,7 +438,7 @@ namespace WinFormApp
         //{            
         //    var service = new CSharpExtractMethodService() as IExtractMethodService;
         //    return await service.ExtractMethodAsync(document, default(TextSpan));
-        //}
+        //}        
 
         static SyntaxNode GetNode(SyntaxTree tree, int lineNumber)
         {

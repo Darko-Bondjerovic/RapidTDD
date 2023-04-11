@@ -231,28 +231,28 @@ namespace DiffNamespace
             return txt;
         }
 
-        public void PaintFailPassLines()
-        {
-            int LineCount = 0;
-            foreach (string line in Lines)
-            {
-                this.Select(
-                    GetFirstCharIndexFromLine(LineCount),
-                    line.Length);
+        //public void PaintFailPassLines()
+        //{
+        //    int LineCount = 0;
+        //    foreach (string line in Lines)
+        //    {
+        //        this.Select(
+        //            GetFirstCharIndexFromLine(LineCount),
+        //            line.Length);
 
-                Color color = darkTheme ?
-                    Color.White : Color.Black;
+        //        Color color = darkTheme ?
+        //            Color.White : Color.Black;
 
-                if (line.Contains("PASS"))
-                    color = Color.Green;
+        //        if (line.Contains("PASS"))
+        //            color = Color.Green;
 
-                if (line.Contains("FAIL"))
-                    color = Color.Red;
+        //        if (line.Contains("FAIL"))
+        //            color = Color.Red;
 
-                this.SelectionColor = color;
+        //        this.SelectionColor = color;
 
-                LineCount++;
-            }
-        }
+        //        LineCount++;
+        //    }
+        //}
     }
 }

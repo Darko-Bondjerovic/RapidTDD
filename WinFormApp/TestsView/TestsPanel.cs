@@ -297,7 +297,7 @@ namespace DiffNamespace
         private SaveFileDialog CreateSaveDialog()
         {
             SaveFileDialog dialog = new SaveFileDialog();
-            dialog.Title = "Save test file";
+            dialog.Title = "Save TEST file";
             dialog.Filter = TESTS_FILTER;
             dialog.DefaultExt = "tst";
             dialog.AddExtension = false;

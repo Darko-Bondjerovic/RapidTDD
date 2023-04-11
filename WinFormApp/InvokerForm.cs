@@ -12,6 +12,9 @@ namespace WinFormApp
         public InvokerForm()
         {
             InitializeComponent();
+
+            ReferecesListView.Columns.Add(new ColumnHeader() { Width = 1900 });
+            ReferecesListView.HeaderStyle = ColumnHeaderStyle.None;
             ReferecesListView.Click += ReferecesListView_Click;
         }
 

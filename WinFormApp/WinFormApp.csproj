@@ -141,6 +141,18 @@
     <Compile Include="AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="CoverForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CoverForm.Designer.cs">
+      <DependentUpon>CoverForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DocMapForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DocMapForm.Designer.cs">
+      <DependentUpon>DocMapForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="EditForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -208,7 +220,7 @@
     <Compile Include="TestsView\TestsTreeView.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="TestsView\TwoColsListView.cs">
+    <Compile Include="TestsView\ColsListView.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="TestsView\UpdateDlg.cs">
@@ -238,15 +250,23 @@
     <Compile Include="Themes\Themes.cs" />
     <Compile Include="Themes\ThemeExt.cs" />
     <Compile Include="Worker\Analyzer.cs" />
+    <Compile Include="Worker\CodeCover.cs" />
     <Compile Include="Worker\Completions.cs" />
     <Compile Include="Worker\ConsoleOutput.cs" />
     <Compile Include="Worker\Discoverer.cs" />
     <Compile Include="Worker\Jump.cs" />
+    <Compile Include="Worker\MarkInfo.cs" />
     <Compile Include="Worker\Utils.cs" />
     <Compile Include="Worker\Worker.cs" />
     <EmbeddedResource Include="AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CoverForm.resx">
+      <DependentUpon>CoverForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DocMapForm.resx">
+      <DependentUpon>DocMapForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="EditForm.resx">
       <DependentUpon>EditForm.cs</DependentUpon>

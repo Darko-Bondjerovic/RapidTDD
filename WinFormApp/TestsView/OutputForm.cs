@@ -13,7 +13,7 @@ namespace WinFormApp.TestsView
         internal void ShowResponseToUI(string response)
         {
             outTextBox.Text = response;
-            outTextBox.PaintFailPassLines();
+            //outTextBox.PaintFailPassLines();
         }
 
         private void OutputForm_FormClosing(object sender, System.Windows.Forms.FormClosingEventArgs e)

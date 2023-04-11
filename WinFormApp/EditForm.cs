@@ -1,22 +1,24 @@
 ﻿using FastColoredTextBoxNS;
+using Microsoft.CodeAnalysis.Differencing;
 using System;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
+using WinFormApp.Themes;
 
 namespace WinFormApp
 {
     public partial class EditForm : DockContent
     {
-        public static Font FONT_FOR_SOURCE = 
+        public static Font FONT_FOR_SOURCE =
             new Font("Consolas", 18, FontStyle.Regular);
 
         public Action<EditForm> WhenClosingEditor = edt => { };
 
         public Action<EditForm> WhenHiddingEditor = edt => { };
 
-
+        public Action<EditForm> WhenActivated = edt => { };
 
         public object FileName { get; internal set; } = null;
         public string TabName
@@ -39,7 +41,23 @@ namespace WinFormApp
 
             FormClosing += EditForm_FormClosing;
             VisibleChanged += EditForm_VisibleChanged;
+            this.Activated += EditForm_Activated;
+
+
+            // needed for code coverage
+            fctb.AllowSeveralTextStyleDrawing = true;
         }
+
+        private void EditForm_Activated(object sender, EventArgs e)
+        {            
+            WhenActivated(this);
+        }
+
+        Style redstyle = new TextStyle(Brushes.LightYellow, Brushes.Tomato, FontStyle.Regular);
+
+        Style GreenStyle = new TextStyle(Brushes.Green, null, FontStyle.Italic);
+
+       
 
         private void EditForm_VisibleChanged(object sender, EventArgs e)
         {
@@ -89,7 +107,7 @@ namespace WinFormApp
             {
                 // brak with message Parameter is not valid
                 // GC collect font and clear?! :( Set again:
-                box.Font = new Font("Consolas", 18, FontStyle.Regular);
+                box.Font = new Font("Consolas", 16, FontStyle.Regular);
             }
 
             // special characters?

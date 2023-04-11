@@ -26,11 +26,13 @@ namespace WinFormApp
         ErrorForm errForm = null;
         InvokerForm invForm = null;
         ProjectForm projForm = null;
+        CoverForm covForm = null;
+        DocMapForm docMapForm = null;
 
         public List<EditForm> editors = new List<EditForm>();
         private string ThemeName = "VSDark"; //"Afterglow";
 
-        Worker worker = null;
+        public Worker worker = null;
         private bool run_in_progress = false;
         private bool HadCompileErorrs = false;        
 
@@ -46,7 +48,7 @@ namespace WinFormApp
 
             this.IsMdiContainer = true;
             menuStrip1.MdiWindowListItem = viewsToolStripMenuItem;
-            
+
             RunSplashScreen();
         }
 
@@ -105,6 +107,36 @@ namespace WinFormApp
             }
         }
 
+        private void MakeDocMapForm()
+        {
+            if (docMapForm == null)
+            {
+                docMapForm = new DocMapForm(this);
+                docMapForm.WhenClosingForm = ClosingDocMapForm;
+                docMapForm.Show(this.dockpanel, DockState.DockRightAutoHide);
+            }
+        }
+
+        private void ClosingDocMapForm()
+        {
+            docMapForm = null;
+        }
+
+        private void MakeCoverForm()
+        {
+            if (covForm == null)
+            {
+                covForm = new CoverForm(this);
+                covForm.WhenClosingForm = ClosingCoverForm;
+                covForm.Show(this.dockpanel, DockState.DockRightAutoHide);
+            }
+        }
+
+        private void ClosingCoverForm()
+        {
+            covForm = null;
+        }
+
         public void ClosingProjectForm()
         {            
             //SaveAllFiles();
@@ -149,7 +181,7 @@ namespace WinFormApp
             this.invForm = null;
         }
 
-        private void FindPosInSource(Jump jump)
+        public void FindPosInSource(Jump jump)
         {
             foreach(var edit in editors)
             {
@@ -165,7 +197,7 @@ namespace WinFormApp
         }
 
         private void ErrForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
+        {            
             this.errForm = null;
         }
 
@@ -282,12 +314,19 @@ namespace WinFormApp
             edt.Show(this.dockpanel, DockState.Document);
             edt.WhenClosingEditor += DoClosingEditor;
             edt.WhenHiddingEditor += DoHiddingEditor;
+            edt.WhenActivated += DoActivatedEditor;
             edt.SetTheme(this.ThemeName);            
             MakeCompletonPopup(edt);
 
             UpdateProjFormUI();
 
             return edt;
+        }
+
+        private void DoActivatedEditor(EditForm edt)
+        {
+            if (docMapForm != null)
+                docMapForm.SetTarget(edt);
         }
 
         private void DoHiddingEditor(EditForm obj)
@@ -596,11 +635,11 @@ namespace WinFormApp
             pop.BackColor = Color.AntiqueWhite;
             pop.SelectedColor = Color.LightSteelBlue;
             pop.SearchPattern = @"[\w\.]";
-            pop.AllowTabKey = false;
-            pop.AlwaysShowTooltip = false;
+            pop.AllowTabKey = true;
+            pop.AlwaysShowTooltip = true;
             // must change both values to setup width:
-            var width = 240;
-            pop.Items.MinimumSize = new Size(width, 250);
+            var width = 350;
+            pop.Items.MinimumSize = new Size(width, 350);
             pop.Items.Width = width;
             pop.Font = new Font("Consolas", 14, FontStyle.Regular);
 
@@ -917,6 +956,44 @@ namespace WinFormApp
                 invForm.DockState = DockState.DockBottom;
                 invForm.DisplayReferences(list);
             }
+        }
+
+        private void coverageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MakeCoverForm();
+            covForm.DockState = DockState.DockRight;
+        }
+
+        public void ExecuteCoverSource(List<DocInfo> docs)
+        {
+            if (this.HadCompileErorrs)
+            {
+                MessageBox.Show("Fix compile errors, please. Then run code coverage...");
+                return;
+            }
+
+            worker.DoCoverage = true;
+            SetRunInProgress(true);
+            try
+            {
+                ExecuteSource(docs);
+            }
+            catch (Exception ex)
+            {
+                FMsgBox.Show(ex.Message);
+            }
+            finally
+            {
+                SetRunInProgress(false);
+                worker.DoCoverage = false;
+            }
+        }
+
+        private void documentMapToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MakeDocMapForm();
+            docMapForm.DockState = DockState.DockRight;
+            docMapForm.SetTarget(CurrentEditForm);
         }
     }
 }

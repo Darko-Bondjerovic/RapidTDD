@@ -11,14 +11,16 @@ namespace WinFormApp
 {
     public partial class ProjectForm : DockContent
     {
-        public Action WhenClosingForm = () => { };
-
         class FileData
         {
             public bool doBuild = true;
             public bool isHidden = false;
             public string fileName = "";
         }        
+
+        public Action WhenClosingForm = () => { };
+
+        private string[] ColsNames = new string[] { "Build", "Show" };
 
         static int IsHidenColumnIndex = 1;
         
@@ -27,6 +29,12 @@ namespace WinFormApp
 
         private string rpdFull = "";
         private string rpdPath = "";
+
+        public static string chk(bool state)
+        {
+            // https://www.compart.com/en/unicode
+            return state ? "☒" : "☐"; // U+2612/U+2610
+        }
 
         public string RpdFull
         {
@@ -62,10 +70,77 @@ namespace WinFormApp
 
         private void SetListViewUI()
         {
-            listView1.ColsNames = new string[] { "Build", "Show" };
-            listView1.WhenColumnClick = DoWhenColumnClick;
-            listView1.WhenMouseDown += DoWhenMouseDown;            
+            listView1.HeaderStyle = ColumnHeaderStyle.Clickable;            
+
+            // set this Tag before SetColumnCaption
+            foreach (ColumnHeader col in listView1.Columns)
+                col.Tag = true;
+
+            SetColumnsCaptions();
+
+            listView1.MouseDown += ListView1_MouseDown;
+            listView1.ColumnClick += ListView1_ColumnClick;            
         }
+
+        private bool ChangeColChecked(ColumnClickEventArgs e)
+        {
+            var column = listView1.Columns[e.Column];
+            var newValue = !Convert.ToBoolean(column.Tag);
+            column.Tag = newValue;
+
+            SetColumnsCaptions();
+
+            return newValue;
+        }
+
+        private void ListView1_ColumnClick(object sender, ColumnClickEventArgs e)
+        {
+            if (e.Column >= 2)
+                return;
+
+            var newValue = ChangeColChecked(e);
+
+            foreach (ListViewItem item in listView1.Items)
+                item.SubItems[e.Column].Text = chk(newValue);
+
+            DoWhenColumnClick(e, newValue);
+        }
+
+        private void ListView1_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+                return;
+
+            if (listView1.Items.Count == 0)
+                return;
+
+            try
+            {
+                var info = listView1.HitTest(e.X, e.Y);
+                var row = info.Item.Index;
+                var col = info.Item.SubItems.IndexOf(info.SubItem);
+                var text = info.Item.SubItems[col].Text;
+
+                if (col >= 2) // other columns
+                    return;
+
+                text = (text == chk(true)) ? chk(false) : chk(true);
+                listView1.Items[row].SubItems[col].Text = text;
+
+                DoWhenMouseDown(row, col);
+            }
+            catch { }
+        }
+
+        private void SetColumnsCaptions()
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                var value = Convert.ToBoolean(listView1.Columns[i].Tag);
+                listView1.Columns[i].Text = $"{chk(value)} {ColsNames[i]}";
+            }
+        }
+
         private void DoWhenColumnClick(ColumnClickEventArgs e, bool newValue)
         {
             if (rpdFull == "")
@@ -290,8 +365,7 @@ namespace WinFormApp
                 e.HideOnClose = true;
 
                 var row = new ListViewItem(new[] {
-                    TwoColsListView.chk(e.DoBuild),
-                    TwoColsListView.chk(!e.IsHidden), 
+                    chk(e.DoBuild), chk(!e.IsHidden), 
                     e.TabName, e.FileName as string});
 
                 listView1.Items.Add(row);

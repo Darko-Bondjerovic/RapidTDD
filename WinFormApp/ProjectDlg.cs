@@ -142,6 +142,10 @@ namespace WinFormApp
         {
             var full = Path.GetFullPath(recentProjects);
 
+            var onlyDir = Path.GetDirectoryName(full);
+            if (!Directory.Exists(onlyDir))
+                Directory.CreateDirectory(onlyDir);
+
             HashSet<string> files = new HashSet<string>();
 
             foreach (ListViewItem item in listView1.Items)
@@ -206,8 +210,11 @@ namespace WinFormApp
         private void rdbRecent_CheckedChanged(object sender, EventArgs e)
         {
             DisableOptions();
-            
+
             // select first item in the list
+            if (listView1.Items.Count == 0)
+                return;
+
             if (listView1.SelectedIndices.Count == 0)
                 listView1.Items[0].Selected = true;
         }

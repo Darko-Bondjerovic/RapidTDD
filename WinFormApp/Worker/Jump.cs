@@ -8,7 +8,7 @@
 
         public Jump() { }
 
-        public Jump(string file, int spot, string desc)
+        public Jump(string file, int spot, string desc = "")
         {
             File = file;
             Spot = spot;

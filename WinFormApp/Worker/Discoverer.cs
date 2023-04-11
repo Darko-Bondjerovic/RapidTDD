@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FastColoredTextBoxNS;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -15,6 +16,24 @@ namespace WinFormApp
 
     public class Discoverer
     {
+
+        public static Dictionary<string, HashSet<int>> FindCCSpanList(Assembly assembly)
+        {
+            foreach (var type in assembly
+                .DefinedTypes
+                .Where(t => t.IsClass)
+                .Where(t => t.FullName == "CODECVG"))
+            {
+                foreach (var prop in type.GetProperties(BindingFlags.Static |BindingFlags.Public )
+                   .Where(p => string.Equals("CCSpanList", p.Name)))
+                {
+                    return (Dictionary<string, HashSet<int>>)prop.GetValue(null);
+                }
+            }
+
+            return null;
+        }
+
         public static MainClassInfo FindStaticEntryMethod(Assembly assembly)
         {
             var candidates = new List<MainClassInfo>();
