@@ -1,5 +1,5 @@
 # Rapid TDD application
-Compile, run c# code in memory and execute tests.
+Compile, run c# code in memory and execute tests with code coverage feature.
 
 You can find more information on the youtube RapidTdd channel:
 https://www.youtube.com/@rapidtdd
@@ -12,3 +12,7 @@ If you want to contribute, create an issue or look for an open issue and provide
 My email: rapidtdd@gmail.com
 
 ![alt text](RapidTDD.png?raw=true)
+
+Code Coverage feature is added inside RapidTDD:
+
+![alt text](CodeCover.png?raw=true)
