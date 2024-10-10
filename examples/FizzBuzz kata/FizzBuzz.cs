@@ -27,9 +27,9 @@ public class Tests
                 RunTest(i);
     }
 
-    static void Print(string str = "")
+    static void Print(string input = "")
     {
-        Console.WriteLine(str);
+        Console.WriteLine(input);
     }
 
     public void RunTest(int num)//, string exp)
