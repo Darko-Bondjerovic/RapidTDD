@@ -1,5 +1,7 @@
 using System.IO;
 using System;
+using System.Text;
+using System.Collections.Generic;
 
 public class MyClass
 {
