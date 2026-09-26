@@ -1,6 +1,6 @@
 # RapidTDD - Rapid TDD application
 
-> 🇷🇸 [Srpska verzija / Serbian version](./README_SR.md)
+> 🇷🇸 [Srpska verzija / Serbian version](./README-SR.md)
 
 Compile, run C# code in memory and execute tests with code coverage feature - without refactoring, without asserts, mocks, or testability layers.
 
@@ -12,7 +12,7 @@ https://www.youtube.com/@rapidtdd
 The latest version of RapidTDD is in releases:
 https://github.com/Darko-Bondjerovic/RapidTDD/releases/
 
-[alt text](RapidTDD.png?raw=true)
+![alt text](RapidTDD.png?raw=true)
 
 ---
 
@@ -108,7 +108,7 @@ for(int i=0; i<100; i++) {
 
 Code Coverage feature is added inside RapidTDD:
 
-[alt text](CodeCover.png?raw=true)
+![alt text](CodeCover.png?raw=true)
 
 #### Defining expected with [EXPC]
 

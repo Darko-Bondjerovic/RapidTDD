@@ -12,7 +12,7 @@ https://www.youtube.com/@rapidtdd
 Najnovija verzija RapidTDD je u releases:
 https://github.com/Darko-Bondjerovic/RapidTDD/releases/
 
-[alt text](RapidTDD.png?raw=true)
+![alt text](RapidTDD.png?raw=true)
 
 ---
 
@@ -82,7 +82,7 @@ for(int i=0; i<100; i++) {
 
 Code Coverage unutar RapidTDD-a:
 
-[alt text](CodeCover.png?raw=true)
+![alt text](CodeCover.png?raw=true)
 
 ---
 
