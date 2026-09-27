@@ -1,16 +1,13 @@
 # RapidTDD - Rapid TDD application
 
-> 🇷🇸 [Srpska verzija / Serbian version](./README-SR.md)
-
 Compile, run C# code in memory and execute tests with code coverage feature - without refactoring, without asserts, mocks, or testability layers.
-
-**Source code:** https://github.com/Darko-Bondjerovic/RapidTDD
 
 You can find more information on the youtube RapidTDD channel:
 https://www.youtube.com/@rapidtdd
 
-The latest version of RapidTDD is in releases:
-https://github.com/Darko-Bondjerovic/RapidTDD/releases/
+**Source code:** https://github.com/Darko-Bondjerovic/RapidTDD
+
+Releases: https://github.com/Darko-Bondjerovic/RapidTDD/releases/
 
 ![alt text](RapidTDD.png?raw=true)
 
@@ -53,15 +50,15 @@ public class Program
 
 Output in RapidTDD:
 ```
-[TEST] Find primes 6
+[TEST] Find primes 6    (fail)
 2
 3
 
-[TEST] Find primes 15
+[TEST] Find primes 15   (pass)
 3
 5  <- actual == expected from [EXPC]
 
-[TEST] Find primes 20
+[TEST] Find primes 20   (fail)
 2
 2
 5
@@ -112,21 +109,18 @@ Code Coverage feature is added inside RapidTDD:
 
 #### Defining expected with [EXPC]
 
-Expected result is all text after first `[EXPC]` up to next `[TEST]`. The `[EXPC]` marker itself is ignored.
+Expected result - is all text after first `[EXPC]` up to next `[TEST]`. 
+Write only one `[EXPC]` marker for one test.
+The `[EXPC]` marker itself is ignored, when test compare act/exp text.
 
 ```csharp
 void AddTest(int a, int b, int exp)
 {
     Console.WriteLine($"[TEST] add: {a}+{b}");
     Console.WriteLine($"{a+b}");
-    Console.WriteLine($"[EXPC]{exp}");
+    Console.WriteLine("[EXPC]Add:");
+    Console.WriteLine($"{exp}");
 }
-```
-
-For multi-line, write `[EXPC]` only once:
-```csharp
-Console.WriteLine("[EXPC]first row");
-Console.WriteLine("second row");
 ```
 
 > For a test to pass, number of lines and text must be completely identical, including newline `\n`.
@@ -140,4 +134,6 @@ If you want to contribute, create an issue or look for an open issue and provide
 My email: rapidtdd@gmail.com
 
 ### For Developers
-For technical stack and future migration plans, see [DEVELOPMENT.md](./DEVELOPMENT.md) and [ROADMAP.md](./ROADMAP.md).
+In order to build application, run build.bat in console.
+
+For future migration plans [ROADMAP.md](./ROADMAP.md).

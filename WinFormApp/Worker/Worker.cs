@@ -1,6 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Host.Mef;
@@ -17,12 +18,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-
-//using Microsoft.CodeAnalysis.ExtractMethod; // IExtractMethodService
-//using Microsoft.CodeAnalysis.CSharp.ExtractMethod; // service
-//using System.Xml.XPath;
-//using System.Runtime.Remoting.Contexts;
-//using System.Runtime.CompilerServices;
 
 namespace WinFormApp
 {
@@ -45,13 +40,13 @@ namespace WinFormApp
         }
     }
 
+    public class SignatureHelpResult
+    {
+        public List<string> Signatures = new List<string>();
+    }
+
     public class Worker
     {
-        // this will also install Workspaces + Microsoft.CodeAnalysis.CSharp:
-        //Install-Package Microsoft.CodeAnalysis.CSharp.Features -Version 3.9.0        
-
-        //private readonly CompositionHost _compositionContext;
-
         public bool FindCC = false;
 
         public static string TargetOfInvocation = "Exception has been thrown by the target of an invocation";
@@ -75,34 +70,10 @@ namespace WinFormApp
             typeof(Microsoft.CSharp.RuntimeBinder.Binder)
         }.ToImmutableArray();
 
-
-        //Static Extension Methods are not returned by the Roslyn CompletionService
-        ////https://stackoverflow.com/questions/59791893/static-extension-methods-are-not-returned-by-the-roslyn-completionservice
-        //private static readonly ImmutableArray<Assembly> _defaultAssemblyes =
-        //    _defaultTypes.Select(x => x.GetTypeInfo().Assembly).Distinct().Concat(new[]
-        //    {
-        //        Assembly.Load(new AssemblyName("System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")),
-        //        typeof(Microsoft.CSharp.RuntimeBinder.Binder).GetTypeInfo().Assembly,
-        //    })
-        //    .ToImmutableArray();
-
-
-        //private static readonly MetadataReference CorlibReference =
-        //    MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
-
-        //private static readonly MetadataReference SystemCoreReference =
-        //    MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location);
-
-        //private static readonly MetadataReference CSharpRuntimeBinder =
-        //    MetadataReference.CreateFromFile(typeof(Microsoft.CSharp.RuntimeBinder.Binder).Assembly.Location);
-
         private static readonly CSharpCompilationOptions _options =
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithOverflowChecks(false)
                 .WithOptimizationLevel(OptimizationLevel.Release);
-        //.WithUsings(DefaultNamespaces);
-
-        //private ImmutableArray<MetadataReference> references;
 
         private AdhocWorkspace workspace = null;
         private Project project = null;
@@ -118,29 +89,11 @@ namespace WinFormApp
 
         public Worker()
         {
-            // System.NotSupportedException : The language 'C#' is not supported error:
             var _ = typeof(Microsoft.CodeAnalysis.CSharp.Formatting.CSharpFormattingOptions);
 
             _host = MefHostServices.Create(MefHostServices.DefaultAssemblies);
 
-            //var partTypes = MefHostServices.DefaultAssemblies.Concat(_defaultReferenceAssemblies)
-            //        .Distinct()
-            //        .SelectMany(x => x.DefinedTypes)
-            //        .Select(x => x.AsType())
-            //        .ToArray();
-
-            //_compositionContext = new ContainerConfiguration()
-            //    .WithParts(partTypes)
-            //    .CreateContainer();
-
-            //_host = MefHostServices.Create(_compositionContext);
-
             workspace = new AdhocWorkspace(_host);
-
-            //references =
-            //    _defaultTypes.Select(t => MetadataReference
-            //    .CreateFromFile(t.Assembly.Location) as MetadataReference)                
-            //    .ToImmutableArray();
 
             AddNetFrameworkDefaultReferences();
 
@@ -158,7 +111,6 @@ namespace WinFormApp
 
             if (!File.Exists(file))
             {
-                // check framework or dedicated runtime app folder
                 var path = Path.GetDirectoryName(typeof(object).Assembly.Location);
                 file = Path.Combine(path, assemblyDll);
                 if (!File.Exists(file))
@@ -205,19 +157,12 @@ namespace WinFormApp
             AddAssembly("System.Core.dll");
             AddAssembly("Microsoft.CSharp.dll");
             AddAssembly("System.Net.Http.dll");
-
-            //AddAssembly(typeof(Microsoft.CodeAnalysis.CSharpExtensions));
-
-            // this library and CodeAnalysis libs
-            //AddAssembly(typeof(ReferenceList)); // Scripting Library
         }
 
         public void AddThirdPartyRefs()
         {
             foreach (var full in RefsForm.GetRefsFilesList())
                 AddAssembly(full);
-
-            //references.Add(MetadataReference.CreateFromFile(full));
         }
 
         private void MakeAndAddProject()
@@ -231,8 +176,6 @@ namespace WinFormApp
 
         public void UpdateDocuments(List<DocInfo> list)
         {
-            //https://github.com/Vannevelj/RoslynTester/blob/master/RoslynTester/RoslynTester/Helpers/DiagnosticVerifier.cs#L433
-
             workspace.ClearSolution();
             MakeAndAddProject();
 
@@ -241,7 +184,6 @@ namespace WinFormApp
             foreach (var item in list)
                 AddDocument(item, ref solution);
 
-            //workspace.TryApplyChanges(solution);
             project = solution.GetProject(project.Id);
         }
 
@@ -250,30 +192,131 @@ namespace WinFormApp
             return project.Documents.FirstOrDefault(d => d.Name.Equals(full));
         }
 
+        public async Task<List<Tuple<string,string>>> ReadCompletionItems(string docname, string word, int position)
+        {
+            Document doc = FindDocByName(docname);
+            if (doc == null) return new List<Tuple<string, string>>();
+
+            try
+            {
+                var completionService = CompletionService.GetService(doc);
+                if (completionService == null) return new List<Tuple<string, string>>();
+
+                // ConfigureAwait(false) da ne blokira UI nit
+                var results = await completionService.GetCompletionsAsync(doc, position).ConfigureAwait(false);
+
+                var list = new List<Tuple<string, string>>();
+                if (results == null)
+                    return list;
+
+                foreach (var item in results.ItemsList)
+                {
+                    try
+                    {
+                        var desc = await completionService.GetDescriptionAsync(doc, item).ConfigureAwait(false);
+                        list.Add(new Tuple<string,string>( item.DisplayText, desc.Text ?? item.DisplayText));
+                    }
+                    catch
+                    {
+                        list.Add(new Tuple<string,string>( item.DisplayText, item.DisplayText));
+                    }
+                }
+                return list;
+            }
+            catch
+            {
+                return new List<Tuple<string, string>>();
+            }
+        }
+
+        // backward compat - stari poziv
         public async Task<List<Tuple<string,string>>> ReadCompletionItems(string docname, string word)
         {
-            //Document doc = MakeDocument(docInfo);
+            return await ReadCompletionItems(docname, word, 0).ConfigureAwait(false);
+        }
 
-            Document doc = FindDocByName(docname);
-            var root = await doc.GetSyntaxRootAsync();
-            var code = root.ToFullString();
-            var position = code.LastIndexOf(word) + word.Length;
-
-            var completionService = CompletionService.GetService(doc);
-            var results = await completionService.GetCompletionsAsync(doc, position);
-            
-
-            var list = new List<Tuple<string, string>>();
-            if (results == null)
-                return list;
-
-            foreach (var item in results.Items)
+        // Signature Help (parametri metode dok kucaš unutar zagrada).
+        // Roslyn-ov ugrađeni SignatureHelpService je interni API, pa ovde
+        // pravimo sopstvenu, jednostavnu verziju preko javnog SemanticModel-a.
+        public async Task<SignatureHelpResult> GetSignatureHelp(string docname, int position)
+        {
+            try
             {
-                var desc = await completionService.GetDescriptionAsync(doc, item);
-                list.Add(new Tuple<string,string>( item.DisplayText, desc.Text));
-            }
+                Document doc = FindDocByName(docname);
+                if (doc == null) return null;
 
-            return list;
+                var semanticModel = await doc.GetSemanticModelAsync().ConfigureAwait(false);
+                var root = await doc.GetSyntaxRootAsync().ConfigureAwait(false);
+                if (semanticModel == null || root == null) return null;
+                if (position < 0 || position > root.FullSpan.Length) return null;
+
+                var token = root.FindToken(position);
+                ArgumentListSyntax argList = null;
+
+                for (var n = token.Parent; n != null; n = n.Parent)
+                {
+                    if (n is ArgumentListSyntax al &&
+                        al.OpenParenToken.Span.End <= position &&
+                        position <= al.CloseParenToken.Span.Start)
+                    {
+                        argList = al;
+                        break;
+                    }
+                    if (n is StatementSyntax) break; // ne izlazi izvan trenutne naredbe
+                }
+
+                if (argList == null || !(argList.Parent is InvocationExpressionSyntax invocation))
+                    return null;
+
+                var candidates = semanticModel.GetMemberGroup(invocation.Expression)
+                    .OfType<IMethodSymbol>().ToList();
+
+                if (candidates.Count == 0)
+                {
+                    var symInfo = semanticModel.GetSymbolInfo(invocation);
+                    if (symInfo.Symbol is IMethodSymbol single)
+                        candidates.Add(single);
+                    else
+                        candidates.AddRange(symInfo.CandidateSymbols.OfType<IMethodSymbol>());
+                }
+
+                if (candidates.Count == 0) return null;
+
+                int activeParam = 0;
+                for (int i = 0; i < argList.Arguments.SeparatorCount; i++)
+                {
+                    if (argList.Arguments.GetSeparator(i).Span.Start < position)
+                        activeParam++;
+                    else
+                        break;
+                }
+
+                var result = new SignatureHelpResult();
+                foreach (var m in candidates.Distinct(SymbolEqualityComparer.Default).OfType<IMethodSymbol>())
+                    result.Signatures.Add(FormatSignature(m, activeParam));
+
+                return result;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static string FormatSignature(IMethodSymbol m, int activeParamIndex)
+        {
+            var parts = new List<string>();
+            for (int i = 0; i < m.Parameters.Length; i++)
+            {
+                var p = m.Parameters[i];
+                var text = $"{p.Type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)} {p.Name}";
+                if (p.HasExplicitDefaultValue)
+                    text += $" = {(p.ExplicitDefaultValue ?? "null")}";
+                if (i == activeParamIndex)
+                    text = "▶" + text;
+                parts.Add(text);
+            }
+            return $"{m.Name}({string.Join(", ", parts)})";
         }        
 
         private Document MakeDocument(DocInfo docInfo)
@@ -304,7 +347,7 @@ namespace WinFormApp
 
             UpdateDocuments(docs);
 
-            compilation = GetCompilations(project.Documents.ToArray()).Result;
+            compilation = Task.Run(() => GetCompilations(project.Documents.ToArray())).Result;
 
             assembly = GetAssembly(compilation);
         }
@@ -317,7 +360,7 @@ namespace WinFormApp
 
             trees = await Task.WhenAll(syntaxTrees);
 
-            string asmName = Path.GetRandomFileName(); //"MyCompilation" nbo45m3c.ap1
+            string asmName = Path.GetRandomFileName();
 
             return CSharpCompilation.Create(asmName, trees, References, _options);
         }
@@ -396,8 +439,6 @@ namespace WinFormApp
             return _consoleOutput.GetOutput();
         }
 
-        //https://stackoverflow.com/questions/1196991/get-property-value-from-string-using-reflection
-
         public static object GetPropValue(object src, string propName)
         {
             return src.GetType().GetProperty(propName).GetValue(src, null);
@@ -434,12 +475,6 @@ namespace WinFormApp
                     $"than the maximum allowed time. [{vaittime} sec]");
         }
 
-        //public async Task<List<DocInfo>> ExtractMethod(DocInfo docinfo)
-        //{            
-        //    var service = new CSharpExtractMethodService() as IExtractMethodService;
-        //    return await service.ExtractMethodAsync(document, default(TextSpan));
-        //}        
-
         static SyntaxNode GetNode(SyntaxTree tree, int lineNumber)
         {
             var lineSpan = tree.GetText().Lines[lineNumber - 1].Span;
@@ -461,20 +496,17 @@ namespace WinFormApp
             if (syntaxReference == null)
                 return result;
 
-            var declaration = syntaxReference.GetSyntax(); // <- prop source code
+            var declaration = syntaxReference.GetSyntax();
             var location = declaration.GetLocation();
 
             if (tag == 1)
             {
-                result.Add(makeJump(location, "")); // source definition
+                result.Add(makeJump(location, ""));
             }
             else
             {
-                // try to find references
                 var solution = doc.Project.Solution;
-                var callerTask = SymbolFinder.FindReferencesAsync(symbol, solution);
-                callerTask.Wait();
-                var callers = callerTask.Result;
+                var callers = await SymbolFinder.FindReferencesAsync(symbol, solution);
 
                 foreach (var referenced in callers)
                 {
@@ -511,21 +543,18 @@ namespace WinFormApp
             if (symbol == null)
                 return null;
 
-            //https://github.com/dotnet/roslyn/blob/proj/src/Workspaces/Core/Portable/FindSymbols/SymbolFinder.cs
-
             var result = new List<DocInfo>();
             var solution = doc.Project.Solution;
 
+            // Roslyn 5.9.0
             solution = await Renamer.RenameSymbolAsync(solution, symbol,
-                        newName, solution.Workspace.Options);
-
-            //workspace.TryApplyChanges(solution);
+                new SymbolRenameOptions(), newName);
 
             project = solution.GetProject(project.Id);
 
             foreach (var d in project.Documents)
             {
-                var newRoot = d.GetSyntaxRootAsync().Result;
+                var newRoot = await d.GetSyntaxRootAsync();
                 result.Add(new DocInfo(d.Name, newRoot.ToFullString()));
             }
 
@@ -566,7 +595,7 @@ namespace WinFormApp
             project = solution.GetProject(project.Id);
             foreach (var d in project.Documents)
             {
-                var newr = d.GetSyntaxRootAsync().Result;
+                var newr = Task.Run(() => d.GetSyntaxRootAsync()).Result;
                 result.Add(new DocInfo(d.Name, newr.ToFullString()));
             }
 
@@ -574,5 +603,3 @@ namespace WinFormApp
         }
     }
 }
-
-

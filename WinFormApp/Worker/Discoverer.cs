@@ -1,4 +1,3 @@
-﻿using FastColoredTextBoxNS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,9 +52,13 @@ namespace WinFormApp
 
             if (candidates.Count > 1)
             {
-                throw new AmbiguousMatchException(
-                    $"Ambiguous entry point. Found multiple static functions named '{MainMethodFullName()}'. " +
-                    $"Could not identify which method is the main entry point for this function.");
+                string entries = string.Join(
+        	   Environment.NewLine,
+        	   candidates.Select(
+		      c => $"{c.MainClass.FullName}.{c.MainMethod.Name}"));
+
+    		throw new AmbiguousMatchException(
+        	   $"Multiple entry points found:{Environment.NewLine}{entries}");
             }
 
             if (candidates.Count == 0)

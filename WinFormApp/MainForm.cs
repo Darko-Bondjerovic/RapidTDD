@@ -30,7 +30,7 @@ namespace WinFormApp
         DocMapForm docMapForm = null;
 
         public List<EditForm> editors = new List<EditForm>();
-        private string ThemeName = "VSDark"; //"Afterglow";
+        private string ThemeName = "DarkOn"; //"VSDark"; //"Afterglow";
 
         public Worker worker = null;
         private bool run_in_progress = false;
