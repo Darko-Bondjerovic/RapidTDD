@@ -67,10 +67,15 @@
   <ItemGroup>  
     <EmbeddedResource Include="Resources\ColorThemes.txt" />
 
-    <Content Include="Resources\No.png" />
-    <Content Include="Resources\Yes.png" />
-    <Content Include="TestsView\images\No.png" />
-    <Content Include="TestsView\images\Yes.png" />
+    <Content Include="TestsView\images\No.png">
+  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+</Content>
+<Content Include="TestsView\images\Yes.png">
+  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+</Content>
+<Content Include="TestsView\images\exclamation 48.png">
+  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+</Content>
     <Content Include="TDD.ico" />
   </ItemGroup>
 
