@@ -23,16 +23,17 @@ namespace WinFormApp
         }
 
         private void MakePopupMenu()
-        {
-            ContextMenu cntxMnu = new ContextMenu();
-            var item = cntxMnu.MenuItems.Add("Copy full path");
-            item.Click += CopyFullPathClick;
+	{
+	    ContextMenuStrip cntxMnu = new ContextMenuStrip();
 
-            var item2 = cntxMnu.MenuItems.Add("Remove item");
-            item2.Click += RemoveItemFormListClick;
+	    var item = cntxMnu.Items.Add("Copy full path");
+	    item.Click += CopyFullPathClick;
 
-            listView1.ContextMenu = cntxMnu;            
-        }
+	    var item2 = cntxMnu.Items.Add("Remove item");
+	    item2.Click += RemoveItemFormListClick;
+
+	    listView1.ContextMenuStrip = cntxMnu;
+	}
 
         private void CopyFullPathClick(object sender, EventArgs e)
         {

@@ -166,17 +166,18 @@ namespace WinFormApp
         }
 
         private void MakePopupMenu()
-        {
-            ContextMenu cntxMnu = new ContextMenu();
-            var item = cntxMnu.MenuItems.Add("Copy full path");
-            item.Click += CopyFullPathClick;
+	{
+	    ContextMenuStrip cntxMnu = new ContextMenuStrip();
 
-            var item2 = cntxMnu.MenuItems.Add("Remove item");
-            item2.Click += RemoveItemFormListClick;
+	    var item = cntxMnu.Items.Add("Copy full path");
+	    item.Click += CopyFullPathClick;
 
-            listView1.ContextMenu = cntxMnu;
-            pnlTestFile.ContextMenu = cntxMnu;
-        }
+	    var item2 = cntxMnu.Items.Add("Remove item");
+	    item2.Click += RemoveItemFormListClick;
+
+	    listView1.ContextMenuStrip = cntxMnu;
+	    pnlTestFile.ContextMenuStrip = cntxMnu;
+	}
 
         private void RemoveItemFormListClick(object sender, EventArgs e)
         {
@@ -212,12 +213,11 @@ namespace WinFormApp
         }
 
         private static Control GetSourceControl(object sender)
-        {
-            var menu = sender as MenuItem;
-            var parent = menu.Parent as ContextMenu;
-            var source = parent.SourceControl;
-            return source;
-        }        
+	{
+	    var menu = sender as ToolStripMenuItem;
+	    var parent = menu?.Owner as ContextMenuStrip;
+	    return parent?.SourceControl;
+	}     
 
         private void CopyFullPathClick(object sender, EventArgs e)
         {

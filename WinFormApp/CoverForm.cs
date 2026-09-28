@@ -87,10 +87,10 @@ namespace WinFormApp
 
         private void MakePopupMenu()
         {
-            ContextMenu cntxMnu = new ContextMenu();
-            var item = cntxMnu.MenuItems.Add("Jump to class code");
+            ContextMenuStrip cntxMnu = new ContextMenuStrip();
+	    var item = cntxMnu.Items.Add("Jump to class code");
             item.Click += JumpToClassCode;
-            listView1.ContextMenu = cntxMnu;
+            listView1.ContextMenuStrip = cntxMnu;
         }
 
         private void JumpToClassCode(object sender, EventArgs e)
@@ -193,7 +193,7 @@ namespace WinFormApp
                     foreach (var m in group)
                     {
                         var fctb = edit.fctb;
-                        Range rng = new Range(fctb,
+                        FastColoredTextBoxNS.Range rng = new FastColoredTextBoxNS.Range(fctb,
                             fctb.PositionToPlace(m.start),
                             fctb.PositionToPlace(m.ends));
 
