@@ -151,13 +151,15 @@ namespace WinFormApp
         }
 
         public void AddNetFrameworkDefaultReferences()
-        {
-            AddAssembly("mscorlib.dll");
-            AddAssembly("System.dll");
-            AddAssembly("System.Core.dll");
-            AddAssembly("Microsoft.CSharp.dll");
-            AddAssembly("System.Net.Http.dll");
-        }
+	{
+  	  AddAssembly(typeof(object));
+  	  AddAssembly(typeof(Console));
+ 	  AddAssembly(typeof(Enumerable));
+	  AddAssembly(typeof(Thread));
+  	  AddAssembly(typeof(Task));
+  	  AddAssembly(typeof(Microsoft.CSharp.RuntimeBinder.Binder));
+  	  AddAssembly("System.Runtime.dll");
+	}
 
         public void AddThirdPartyRefs()
         {
