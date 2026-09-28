@@ -1,7 +1,5 @@
 ﻿//          Copyright Tao Klerks, 2010-2012, tao@klerks.biz         
 //          Licensed under the modified BSD license.
-
-
 using System;
 using System.IO;
 using System.Text;
@@ -35,10 +33,9 @@ namespace FastColoredTextBoxNS
 
             InputFileStream.Position = 0;
 
-
             //First read only what we need for BOM detection
             byte[] bomBytes = new byte[InputFileStream.Length > 4 ? 4 : InputFileStream.Length];
-            InputFileStream.Read(bomBytes, 0, bomBytes.Length);
+            InputFileStream.ReadExactly(bomBytes, 0, bomBytes.Length);
 
             encodingFound = DetectBOMBytes(bomBytes);
 
@@ -49,13 +46,12 @@ namespace FastColoredTextBoxNS
                 return encodingFound;
             }
 
-
             //BOM Detection failed, going for heuristics now.
             //  create sample byte array and populate it
             byte[] sampleBytes = new byte[HeuristicSampleSize > InputFileStream.Length ? InputFileStream.Length : HeuristicSampleSize];
             Array.Copy(bomBytes, sampleBytes, bomBytes.Length);
             if (InputFileStream.Length > bomBytes.Length)
-                InputFileStream.Read(sampleBytes, bomBytes.Length, sampleBytes.Length - bomBytes.Length);
+                InputFileStream.ReadExactly(sampleBytes, bomBytes.Length, sampleBytes.Length - bomBytes.Length);
             InputFileStream.Position = originalPos;
 
             //test byte array content
@@ -91,7 +87,7 @@ namespace FastColoredTextBoxNS
                 return Encoding.UTF8;
 
             if (BOMBytes[0] == 0x2b && BOMBytes[1] == 0x2f && BOMBytes[2] == 0x76)
-                return Encoding.UTF7;
+                return Encoding.GetEncoding("utf-7");
 
             if (BOMBytes.Length < 4)
                 return null;
@@ -166,7 +162,6 @@ namespace FastColoredTextBoxNS
                 )
                 return Encoding.Unicode;
 
-
             //2: UTF-16 BE - in english / european environments, this is usually characterized by a 
             //  high proportion of even binary nulls (starting at 0), with (as this is text) a low 
             //  proportion of odd binary nulls.
@@ -177,7 +172,6 @@ namespace FastColoredTextBoxNS
                 && ((evenBinaryNullsInSample * 2.0) / SampleBytes.Length) > 0.6
                 )
                 return Encoding.BigEndianUnicode;
-
 
             //3: UTF-8 - Martin Dürst outlines a method for detecting whether something CAN be UTF-8 content 
             //  using regexp, in his w3c.org unicode FAQ entry: 

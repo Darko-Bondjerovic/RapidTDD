@@ -6,4 +6,6 @@ rmdir /s /q FastColoredTextBox\bin
 rmdir /s /q FastColoredTextBox\obj
 
 dotnet restore RapidTDD.sln
-dotnet build RapidTDD.sln -c Release --no-restore -tl:off -clp:ErrorsOnly -nologo && "WinFormApp\bin\Release\net9.0-windows\RapidTDD.exe"
+dotnet build RapidTDD.sln -c Release --no-restore
+
+pause

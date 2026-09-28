@@ -427,34 +427,20 @@ namespace WinFormApp.Themes
 		}
 
 		static public string ReadThemesFromResources()
-		{
-			// click on ColorThemes in Resources folder and set Build Action: Embeded Resources
-			var filename = @"WinFormApp.Resources.ColorThemes.txt";
-			Assembly assembly = Assembly.GetExecutingAssembly();
+{
+    Assembly assembly = Assembly.GetExecutingAssembly();
 
-			// read resouces:
-			//var str = "";
-			//string[] names = assembly.GetManifestResourceNames();
-			//ResourceSet set = new ResourceSet(assembly.GetManifestResourceStream(names[3]));
-			//foreach (DictionaryEntry resource in set)	
-			//	str += $"\n[{resource.Key}] \t{resource.Value}\n";
+    foreach (string name in assembly.GetManifestResourceNames())
+    {
+        if (name.EndsWith("ColorThemes.txt"))
+        {
+            using (Stream stream = assembly.GetManifestResourceStream(name))
+            using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+                return reader.ReadToEnd();
+        }
+    }
 
-			var text = string.Empty;
-			Stream stream = assembly.GetManifestResourceStream(filename);
-			try
-			{
-				using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
-				{
-					stream = null;
-					text = reader.ReadToEnd();
-				}
-			}
-			finally
-			{
-				if (stream != null)
-					stream.Dispose();
-			}
-			return text;
-		}
-	}
+    return "";
+}
+}
 }

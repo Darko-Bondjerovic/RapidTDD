@@ -65,8 +65,6 @@
   </ItemGroup>
 
   <ItemGroup>  
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Web" />
     <EmbeddedResource Include="Resources\ColorThemes.txt" />
 
     <Content Include="Resources\No.png" />

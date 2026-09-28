@@ -68,7 +68,7 @@ namespace WinFormApp
             this.fctb.Name = "fctb";
             this.fctb.Paddings = new System.Windows.Forms.Padding(0);
             this.fctb.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
-            this.fctb.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("fctb.ServiceColors")));
+            
             this.fctb.Size = new System.Drawing.Size(800, 233);
             this.fctb.TabIndex = 0;
             this.fctb.Zoom = 100;
@@ -98,7 +98,7 @@ namespace WinFormApp
             this.second.Name = "second";
             this.second.Paddings = new System.Windows.Forms.Padding(0);
             this.second.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
-            this.second.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("second.ServiceColors")));
+            
             this.second.Size = new System.Drawing.Size(800, 213);
             this.second.TabIndex = 1;
             this.second.Zoom = 100;
