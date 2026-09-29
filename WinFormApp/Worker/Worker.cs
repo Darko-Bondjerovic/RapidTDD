@@ -102,64 +102,163 @@ namespace WinFormApp
             MakeAndAddProject();
         }
 
+        private bool HasReference(string file)
+        {
+            if (string.IsNullOrEmpty(file))
+                return false;
+
+            file = Path.GetFullPath(file);
+
+            return References.Any(r =>
+                !string.IsNullOrEmpty(r.FilePath) &&
+                string.Equals(
+                    Path.GetFullPath(r.FilePath),
+                    file,
+                    StringComparison.OrdinalIgnoreCase));
+        }
 
         public bool AddAssembly(string assemblyDll)
         {
-            if (string.IsNullOrEmpty(assemblyDll)) return false;
+            if (string.IsNullOrEmpty(assemblyDll))
+                return false;
 
-            var file = Path.GetFullPath(assemblyDll);
+            string file = Path.GetFullPath(assemblyDll);
 
             if (!File.Exists(file))
             {
-                var path = Path.GetDirectoryName(typeof(object).Assembly.Location);
+                string path = Path.GetDirectoryName(typeof(object).Assembly.Location);
+
+                if (string.IsNullOrEmpty(path))
+                    return false;
+
                 file = Path.Combine(path, assemblyDll);
+
                 if (!File.Exists(file))
                     return false;
             }
 
-            if (References.Any(r => r.FilePath == file)) return true;
+            if (HasReference(file))
+                return true;
 
             try
             {
                 var reference = MetadataReference.CreateFromFile(file);
-                References.Add(reference);
+
+                if (!HasReference(file))
+                    References.Add(reference);
+
+                return true;
             }
             catch
             {
                 return false;
             }
-
-            return true;
         }
 
         public bool AddAssembly(Type type)
         {
+            if (type == null)
+                return false;
+
             try
             {
-                if (References.Any(r => r.FilePath == type.Assembly.Location))
+                string file = type.Assembly.Location;
+
+                if (string.IsNullOrEmpty(file) || !File.Exists(file))
+                    return false;
+
+                if (HasReference(file))
                     return true;
 
-                var systemReference = MetadataReference.CreateFromFile(type.Assembly.Location);
-                References.Add(systemReference);
+                var reference = MetadataReference.CreateFromFile(file);
+
+                if (!HasReference(file))
+                    References.Add(reference);
+
+                return true;
             }
             catch
             {
                 return false;
             }
-
-            return true;
         }
 
+        public void AddNet9AllReferences()
+        {
+            string dotnet = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                "dotnet");
+
+            string packs = Path.Combine(dotnet, "packs");
+
+            if (!Directory.Exists(packs))
+                return;
+
+            foreach (string pack in Directory.GetDirectories(packs))
+            {
+                string packName = Path.GetFileName(pack);
+
+                // Samo .NET 9 reference packovi
+                if (!packName.EndsWith(".Ref", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                string[] versions = Directory.GetDirectories(pack);
+
+                foreach (string version in versions.OrderByDescending(x => x))
+                {
+                    string refRoot = Path.Combine(version, "ref");
+
+                    if (!Directory.Exists(refRoot))
+                        continue;
+
+                    foreach (string framework in Directory.GetDirectories(refRoot))
+                    {
+                        // Uzimamo samo net9.0 reference assemblies
+                        if (!Path.GetFileName(framework)
+                            .Equals("net9.0", StringComparison.OrdinalIgnoreCase))
+                            continue;
+
+                        foreach (string dll in Directory.GetFiles(framework, "*.dll"))
+                        {
+                            try
+                            {
+                                AddAssembly(dll);
+                            }
+                            catch
+                            {
+                            }
+                        }
+
+                        // Nađena odgovarajuća verzija ovog pack-a
+                        break;
+                    }
+
+                    // Najnovija verzija pack-a je dovoljna
+                    break;
+                }
+            }
+        }
+
+        /*
         public void AddNetFrameworkDefaultReferences()
-	{
-  	  AddAssembly(typeof(object));
-  	  AddAssembly(typeof(Console));
- 	  AddAssembly(typeof(Enumerable));
-	  AddAssembly(typeof(Thread));
-  	  AddAssembly(typeof(Task));
-  	  AddAssembly(typeof(Microsoft.CSharp.RuntimeBinder.Binder));
-  	  AddAssembly("System.Runtime.dll");
-	}
+        {
+            AddAssembly(typeof(object));
+            AddAssembly(typeof(Console));
+            AddAssembly(typeof(Enumerable));
+            AddAssembly(typeof(Thread));
+            AddAssembly(typeof(Task));
+            AddAssembly(typeof(Microsoft.CSharp.RuntimeBinder.Binder));
+            AddAssembly("System.Runtime.dll");
+
+            AddAssembly(typeof(System.Windows.Forms.Form));
+            AddAssembly(typeof(System.Drawing.Color));
+        }
+        */
+
+        public void AddNetFrameworkDefaultReferences()
+        {
+            AddNet9AllReferences();
+        }
 
         public void AddThirdPartyRefs()
         {
@@ -169,9 +268,13 @@ namespace WinFormApp
 
         private void MakeAndAddProject()
         {
-            var projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(),
-                 VersionStamp.Create(), "RapidProject", "RapidProject", LanguageNames.CSharp).
-                 WithMetadataReferences(References);
+            var projectInfo = ProjectInfo.Create(
+                ProjectId.CreateNewId(),
+                VersionStamp.Create(),
+                "RapidProject",
+                "RapidProject",
+                LanguageNames.CSharp)
+                .WithMetadataReferences(References);
 
             project = workspace.AddProject(projectInfo);
         }
@@ -194,20 +297,28 @@ namespace WinFormApp
             return project.Documents.FirstOrDefault(d => d.Name.Equals(full));
         }
 
-        public async Task<List<Tuple<string,string>>> ReadCompletionItems(string docname, string word, int position)
+        public async Task<List<Tuple<string, string>>> ReadCompletionItems(
+            string docname, string word, int position)
         {
             Document doc = FindDocByName(docname);
-            if (doc == null) return new List<Tuple<string, string>>();
+
+            if (doc == null)
+                return new List<Tuple<string, string>>();
 
             try
             {
                 var completionService = CompletionService.GetService(doc);
-                if (completionService == null) return new List<Tuple<string, string>>();
+
+                if (completionService == null)
+                    return new List<Tuple<string, string>>();
 
                 // ConfigureAwait(false) da ne blokira UI nit
-                var results = await completionService.GetCompletionsAsync(doc, position).ConfigureAwait(false);
+                var results = await completionService
+                    .GetCompletionsAsync(doc, position)
+                    .ConfigureAwait(false);
 
                 var list = new List<Tuple<string, string>>();
+
                 if (results == null)
                     return list;
 
@@ -215,14 +326,22 @@ namespace WinFormApp
                 {
                     try
                     {
-                        var desc = await completionService.GetDescriptionAsync(doc, item).ConfigureAwait(false);
-                        list.Add(new Tuple<string,string>( item.DisplayText, desc.Text ?? item.DisplayText));
+                        var desc = await completionService
+                            .GetDescriptionAsync(doc, item)
+                            .ConfigureAwait(false);
+
+                        list.Add(new Tuple<string, string>(
+                            item.DisplayText,
+                            desc.Text ?? item.DisplayText));
                     }
                     catch
                     {
-                        list.Add(new Tuple<string,string>( item.DisplayText, item.DisplayText));
+                        list.Add(new Tuple<string, string>(
+                            item.DisplayText,
+                            item.DisplayText));
                     }
                 }
+
                 return list;
             }
             catch
@@ -232,25 +351,39 @@ namespace WinFormApp
         }
 
         // backward compat - stari poziv
-        public async Task<List<Tuple<string,string>>> ReadCompletionItems(string docname, string word)
+        public async Task<List<Tuple<string, string>>> ReadCompletionItems(
+            string docname, string word)
         {
-            return await ReadCompletionItems(docname, word, 0).ConfigureAwait(false);
+            return await ReadCompletionItems(docname, word, 0)
+                .ConfigureAwait(false);
         }
 
         // Signature Help (parametri metode dok kucaš unutar zagrada).
         // Roslyn-ov ugrađeni SignatureHelpService je interni API, pa ovde
         // pravimo sopstvenu, jednostavnu verziju preko javnog SemanticModel-a.
-        public async Task<SignatureHelpResult> GetSignatureHelp(string docname, int position)
+        public async Task<SignatureHelpResult> GetSignatureHelp(
+            string docname, int position)
         {
             try
             {
                 Document doc = FindDocByName(docname);
-                if (doc == null) return null;
 
-                var semanticModel = await doc.GetSemanticModelAsync().ConfigureAwait(false);
-                var root = await doc.GetSyntaxRootAsync().ConfigureAwait(false);
-                if (semanticModel == null || root == null) return null;
-                if (position < 0 || position > root.FullSpan.Length) return null;
+                if (doc == null)
+                    return null;
+
+                var semanticModel = await doc
+                    .GetSemanticModelAsync()
+                    .ConfigureAwait(false);
+
+                var root = await doc
+                    .GetSyntaxRootAsync()
+                    .ConfigureAwait(false);
+
+                if (semanticModel == null || root == null)
+                    return null;
+
+                if (position < 0 || position > root.FullSpan.Length)
+                    return null;
 
                 var token = root.FindToken(position);
                 ArgumentListSyntax argList = null;
@@ -264,28 +397,39 @@ namespace WinFormApp
                         argList = al;
                         break;
                     }
-                    if (n is StatementSyntax) break; // ne izlazi izvan trenutne naredbe
+
+                    if (n is StatementSyntax)
+                        break;
                 }
 
-                if (argList == null || !(argList.Parent is InvocationExpressionSyntax invocation))
+                if (argList == null ||
+                    !(argList.Parent is InvocationExpressionSyntax invocation))
                     return null;
 
-                var candidates = semanticModel.GetMemberGroup(invocation.Expression)
-                    .OfType<IMethodSymbol>().ToList();
+                var candidates = semanticModel
+                    .GetMemberGroup(invocation.Expression)
+                    .OfType<IMethodSymbol>()
+                    .ToList();
 
                 if (candidates.Count == 0)
                 {
                     var symInfo = semanticModel.GetSymbolInfo(invocation);
+
                     if (symInfo.Symbol is IMethodSymbol single)
                         candidates.Add(single);
                     else
-                        candidates.AddRange(symInfo.CandidateSymbols.OfType<IMethodSymbol>());
+                        candidates.AddRange(
+                            symInfo.CandidateSymbols.OfType<IMethodSymbol>());
                 }
 
-                if (candidates.Count == 0) return null;
+                if (candidates.Count == 0)
+                    return null;
 
                 int activeParam = 0;
-                for (int i = 0; i < argList.Arguments.SeparatorCount; i++)
+
+                for (int i = 0;
+                     i < argList.Arguments.SeparatorCount;
+                     i++)
                 {
                     if (argList.Arguments.GetSeparator(i).Span.Start < position)
                         activeParam++;
@@ -294,8 +438,14 @@ namespace WinFormApp
                 }
 
                 var result = new SignatureHelpResult();
-                foreach (var m in candidates.Distinct(SymbolEqualityComparer.Default).OfType<IMethodSymbol>())
-                    result.Signatures.Add(FormatSignature(m, activeParam));
+
+                foreach (var m in candidates
+                    .Distinct(SymbolEqualityComparer.Default)
+                    .OfType<IMethodSymbol>())
+                {
+                    result.Signatures.Add(
+                        FormatSignature(m, activeParam));
+                }
 
                 return result;
             }
@@ -305,21 +455,29 @@ namespace WinFormApp
             }
         }
 
-        private static string FormatSignature(IMethodSymbol m, int activeParamIndex)
+        private static string FormatSignature(
+            IMethodSymbol m, int activeParamIndex)
         {
             var parts = new List<string>();
+
             for (int i = 0; i < m.Parameters.Length; i++)
             {
                 var p = m.Parameters[i];
-                var text = $"{p.Type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)} {p.Name}";
+
+                var text =
+                    $"{p.Type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)} {p.Name}";
+
                 if (p.HasExplicitDefaultValue)
                     text += $" = {(p.ExplicitDefaultValue ?? "null")}";
+
                 if (i == activeParamIndex)
                     text = "▶" + text;
+
                 parts.Add(text);
             }
+
             return $"{m.Name}({string.Join(", ", parts)})";
-        }        
+        }
 
         private Document MakeDocument(DocInfo docInfo)
         {
@@ -330,16 +488,25 @@ namespace WinFormApp
                 doc = AddDocument(docInfo, ref solution);
 
             project = solution.GetProject(project.Id);
+
             return doc;
         }
 
-        private Document AddDocument(DocInfo docInfo, ref Solution solution)
+        private Document AddDocument(
+            DocInfo docInfo, ref Solution solution)
         {
             Document doc;
+
             var source = SourceText.From(docInfo.code);
             var documentId = DocumentId.CreateNewId(project.Id);
-            solution = solution.AddDocument(documentId, docInfo.full, source);
+
+            solution = solution.AddDocument(
+                documentId,
+                docInfo.full,
+                source);
+
             doc = solution.GetDocument(documentId);
+
             return doc;
         }
 
@@ -349,22 +516,29 @@ namespace WinFormApp
 
             UpdateDocuments(docs);
 
-            compilation = Task.Run(() => GetCompilations(project.Documents.ToArray())).Result;
+            compilation = Task.Run(() =>
+                GetCompilations(project.Documents.ToArray())).Result;
 
             assembly = GetAssembly(compilation);
         }
 
-        private async Task<Compilation> GetCompilations(params Document[] documents)
+        private async Task<Compilation> GetCompilations(
+            params Document[] documents)
         {
             WriteInfo("Compile...");
 
-            var syntaxTrees = documents.Select(async (d) => await d.GetSyntaxTreeAsync());
+            var syntaxTrees = documents.Select(
+                async (d) => await d.GetSyntaxTreeAsync());
 
             trees = await Task.WhenAll(syntaxTrees);
 
             string asmName = Path.GetRandomFileName();
 
-            return CSharpCompilation.Create(asmName, trees, References, _options);
+            return CSharpCompilation.Create(
+                asmName,
+                trees,
+                References,
+                _options);
         }
 
         private Assembly GetAssembly(Compilation compilation)
@@ -372,13 +546,17 @@ namespace WinFormApp
             using (MemoryStream ms = new MemoryStream())
             {
                 WriteInfo("Emit...");
+
                 var emitResult = compilation.Emit(ms);
+
                 WriteInfo("Emit done...");
 
                 if (emitResult.Success)
                 {
                     WriteInfo("Success!");
+
                     ms.Seek(0, SeekOrigin.Begin);
+
                     var buffer = ms.GetBuffer();
                     var assembly = Assembly.Load(buffer);
 
@@ -390,24 +568,30 @@ namespace WinFormApp
 
                     var failures = emitResult.Diagnostics
                         .Where(diagnostic =>
-                        diagnostic.IsWarningAsError ||
-                        diagnostic.Severity == DiagnosticSeverity.Error);
+                            diagnostic.IsWarningAsError ||
+                            diagnostic.Severity == DiagnosticSeverity.Error);
 
                     var errors = new List<Jump>();
+
                     foreach (Diagnostic fail in failures)
                     {
                         var filePath = "";
                         var loc = fail.Location;
+
                         if (loc.SourceTree != null)
-                            filePath = loc.SourceTree.FilePath ?? "";                            
+                            filePath = loc.SourceTree.FilePath ?? "";
 
                         errors.Add(new Jump(
-                            filePath, loc.SourceSpan.Start,
+                            filePath,
+                            loc.SourceSpan.Start,
                             $"{fail.Id} {fail.GetMessage()}"));
                     }
 
-                    var excp = new Exception("FAIL : (errors in code)\r\n");
+                    var excp = new Exception(
+                        "FAIL : (errors in code)\r\n");
+
                     excp.Data.Add("ErrorsInCode", errors);
+
                     throw excp;
                 }
             }
@@ -419,37 +603,48 @@ namespace WinFormApp
 
             if (assembly != null)
             {
-                MainClassInfo main = Discoverer.FindStaticEntryMethod(assembly);
+                MainClassInfo main =
+                    Discoverer.FindStaticEntryMethod(assembly);
 
-                object program = Activator.CreateInstance(main.MainClass);
-                main.MainMethod.Invoke(program, new object[] { args });
+                object program =
+                    Activator.CreateInstance(main.MainClass);
+
+                main.MainMethod.Invoke(
+                    program,
+                    new object[] { args });
             }
 
             if (DoCoverage)
-            {                
+            {
                 CCList = new HashSet<MarkInfo>();
-                
+
                 var dict = Discoverer.FindCCSpanList(assembly);
+
                 if (dict != null)
                 {
-                    foreach (var l in dict)                                            
+                    foreach (var l in dict)
                         foreach (var v in l.Value)
-                            CCList.Add(new MarkInfo(l.Key, v));                    
+                            CCList.Add(new MarkInfo(l.Key, v));
                 }
             }
 
             return _consoleOutput.GetOutput();
         }
 
-        public static object GetPropValue(object src, string propName)
+        public static object GetPropValue(
+            object src, string propName)
         {
-            return src.GetType().GetProperty(propName).GetValue(src, null);
+            return src.GetType()
+                .GetProperty(propName)
+                .GetValue(src, null);
         }
 
         public string RunCodeThread(string[] args)
         {
             WriteInfo("Execute...");
+
             var vaittime = 15;
+
             var task = Task.Run(() =>
             {
                 try
@@ -461,40 +656,51 @@ namespace WinFormApp
                     var result = "FAIL: \n" + e.Message;
 
                     if (e.Message.Contains(TargetOfInvocation))
-                       result += "\n\n" + e.InnerException.Message;
+                        result += "\n\n" + e.InnerException.Message;
 
                     return result;
                 }
             });
 
-            bool onTime = task.Wait(TimeSpan.FromSeconds(vaittime));
+            bool onTime =
+                task.Wait(TimeSpan.FromSeconds(vaittime));
 
             if (onTime)
                 return (string)task.Result;
-            else
-                throw new TimeoutException(
-                    $"The function lasted longer " +
-                    $"than the maximum allowed time. [{vaittime} sec]");
+
+            throw new TimeoutException(
+                $"The function lasted longer " +
+                $"than the maximum allowed time. [{vaittime} sec]");
         }
 
-        static SyntaxNode GetNode(SyntaxTree tree, int lineNumber)
+        static SyntaxNode GetNode(
+            SyntaxTree tree, int lineNumber)
         {
-            var lineSpan = tree.GetText().Lines[lineNumber - 1].Span;
-            return tree.GetRoot().DescendantNodes(lineSpan)
+            var lineSpan =
+                tree.GetText().Lines[lineNumber - 1].Span;
+
+            return tree.GetRoot()
+                .DescendantNodes(lineSpan)
                 .First(n => lineSpan.Contains(n.Span));
         }
 
         public async Task<List<Jump>> FindSymbolDefinition(
-                DocInfo docInfo, int position, int tag)
+            DocInfo docInfo, int position, int tag)
         {
             Document doc = MakeDocument(docInfo);
-            var symbol = await SymbolFinder.FindSymbolAtPositionAsync(doc, position);
+
+            var symbol =
+                await SymbolFinder.FindSymbolAtPositionAsync(
+                    doc, position);
+
             if (symbol == null)
                 return null;
 
-            var result = new List<Jump>();            
-            
-            var syntaxReference = symbol.DeclaringSyntaxReferences.FirstOrDefault();
+            var result = new List<Jump>();
+
+            var syntaxReference =
+                symbol.DeclaringSyntaxReferences.FirstOrDefault();
+
             if (syntaxReference == null)
                 return result;
 
@@ -508,7 +714,11 @@ namespace WinFormApp
             else
             {
                 var solution = doc.Project.Solution;
-                var callers = await SymbolFinder.FindReferencesAsync(symbol, solution);
+
+                var callers =
+                    await SymbolFinder.FindReferencesAsync(
+                        symbol,
+                        solution);
 
                 foreach (var referenced in callers)
                 {
@@ -516,14 +726,20 @@ namespace WinFormApp
                     {
                         var text = "";
                         var tree = loc.Location.SourceTree;
+
                         if (tree != null)
                         {
                             var fullText = tree.GetText();
-                            var linePos = loc.Location.GetLineSpan().StartLinePosition.Line;
-                            text = fullText.Lines[linePos].ToString();                            
-                        }                        
 
-                        result.Add(makeJump(loc.Location, text));
+                            var linePos =
+                                loc.Location.GetLineSpan()
+                                    .StartLinePosition.Line;
+
+                            text = fullText.Lines[linePos].ToString();
+                        }
+
+                        result.Add(
+                            makeJump(loc.Location, text));
                     }
                 }
             }
@@ -531,17 +747,27 @@ namespace WinFormApp
             return result;
         }
 
-        private static Jump makeJump(Location location, string text)
+        private static Jump makeJump(
+            Location location, string text)
         {
-            return new Jump(location.SourceTree.FilePath,
-                location.SourceSpan.Start, text);
+            return new Jump(
+                location.SourceTree.FilePath,
+                location.SourceSpan.Start,
+                text);
         }
 
-        public async Task<List<DocInfo>> RenameSymbol(DocInfo docInfo,
-            int position, string newName)
+        public async Task<List<DocInfo>> RenameSymbol(
+            DocInfo docInfo,
+            int position,
+            string newName)
         {
             Document doc = MakeDocument(docInfo);
-            var symbol = await SymbolFinder.FindSymbolAtPositionAsync(doc, position);
+
+            var symbol =
+                await SymbolFinder.FindSymbolAtPositionAsync(
+                    doc,
+                    position);
+
             if (symbol == null)
                 return null;
 
@@ -549,56 +775,88 @@ namespace WinFormApp
             var solution = doc.Project.Solution;
 
             // Roslyn 5.9.0
-            solution = await Renamer.RenameSymbolAsync(solution, symbol,
-                new SymbolRenameOptions(), newName);
+            solution = await Renamer.RenameSymbolAsync(
+                solution,
+                symbol,
+                new SymbolRenameOptions(),
+                newName);
 
             project = solution.GetProject(project.Id);
 
             foreach (var d in project.Documents)
             {
-                var newRoot = await d.GetSyntaxRootAsync();
-                result.Add(new DocInfo(d.Name, newRoot.ToFullString()));
+                var newRoot =
+                    await d.GetSyntaxRootAsync();
+
+                result.Add(new DocInfo(
+                    d.Name,
+                    newRoot.ToFullString()));
             }
 
             return result;
-        }         
+        }
 
         internal async Task<List<DocInfo>> GenerateMethod(
-            Analyzer ana, DocInfo info, int position)
+            Analyzer ana,
+            DocInfo info,
+            int position)
         {
             Document doc = FindDocByName(info.full);
 
-            var found = await ana.AnalyzeDoc(doc, position, project.Documents);
+            var found =
+                await ana.AnalyzeDoc(
+                    doc,
+                    position,
+                    project.Documents);
 
             if (found == null)
                 return null;
 
             return UpdateSolution(ana, found);
-        }        
+        }
 
-        private List<DocInfo> UpdateSolution(Analyzer ana, ClassData cd)
+        private List<DocInfo> UpdateSolution(
+            Analyzer ana,
+            ClassData cd)
         {
             var result = new List<DocInfo>();
 
             var method = ana.GenerateMethod();
 
             if (!FMsgBox.Show(
-                   $"Generate method in class {cd.name}?" +
-                   $"\n\n{method.NormalizeWhitespace()}", true))
+                $"Generate method in class {cd.name}?" +
+                $"\n\n{method.NormalizeWhitespace()}",
+                true))
                 return result;
-            
+
             var solution = workspace.CurrentSolution;
+
             var newCls = cd.syClass.AddMembers(method);
-            SyntaxNode newRoot = cd.syRoot.ReplaceNode(cd.syClass, newCls);
-            newRoot = Formatter.Format(newRoot, workspace);
-            solution = project.Solution.WithDocumentSyntaxRoot(cd.docId, newRoot);
+
+            SyntaxNode newRoot =
+                cd.syRoot.ReplaceNode(cd.syClass, newCls);
+
+            newRoot = Formatter.Format(
+                newRoot,
+                workspace);
+
+            solution =
+                project.Solution.WithDocumentSyntaxRoot(
+                    cd.docId,
+                    newRoot);
+
             workspace.TryApplyChanges(solution);
 
             project = solution.GetProject(project.Id);
+
             foreach (var d in project.Documents)
             {
-                var newr = Task.Run(() => d.GetSyntaxRootAsync()).Result;
-                result.Add(new DocInfo(d.Name, newr.ToFullString()));
+                var newr =
+                    Task.Run(() => d.GetSyntaxRootAsync()).Result;
+
+                result.Add(new DocInfo(
+                    d.Name,
+                    newr.ToFullString()));
             }
 
             return result;
