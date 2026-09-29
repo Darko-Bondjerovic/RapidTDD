@@ -30,17 +30,13 @@ namespace WinFormApp.TestsView
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TestsForm));
+            
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.SuspendLayout();
             // 
             // imageList1
             // 
-            this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
             this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
-            this.imageList1.Images.SetKeyName(0, "No.png");
-            this.imageList1.Images.SetKeyName(1, "Yes.png");
-            this.imageList1.Images.SetKeyName(2, "exclamation 48.png");
             // 
             // TestsForm
             // 

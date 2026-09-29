@@ -8,21 +8,19 @@ namespace WinFormApp
 {
     public partial class RefsForm : Form
     {
-        #if DEBUG
-            static string refsFile = @"..\..\RefsDir\references.txt";
-        #else
-            static string refsFile = @"RefsDir\references.txt";
-        #endif
+#if DEBUG
+        static string refsFile = @"..\..\RefsDir\references.txt";
+#else
+        static string refsFile = @"RefsDir\references.txt";
+#endif
 
         static List<string> paths = new List<string>();
-
         static List<string> files = new List<string>();
 
         public RefsForm()
         {
             InitializeComponent();
-            this.StartPosition = FormStartPosition.CenterScreen;
-            //this.ShowInTaskbar = false;
+            StartPosition = FormStartPosition.CenterScreen;
 
             LoadPaths();
             LoadFiles();
@@ -30,47 +28,50 @@ namespace WinFormApp
             txtFiles.Text = string.Join(Environment.NewLine, files);
             txtPaths.Text = string.Join(Environment.NewLine, paths);
 
-            this.Text = Path.GetFullPath(refsFile);
+            Text = Path.GetFullPath(refsFile);
 
-            this.Load += RefsForm_Load; 
+            Load += RefsForm_Load;
         }
 
         private void RefsForm_Load(object sender, EventArgs e)
         {
-            this.ActiveControl = btnSave;
+            ActiveControl = btnSave;
             btnSave.Focus();
         }
 
         private static void LoadFiles()
         {
             if (File.Exists(refsFile))
-                files = File.ReadAllLines(refsFile).ToList();
+            {
+                files = File.ReadAllLines(refsFile)
+                    .Where(l => !string.IsNullOrWhiteSpace(l))
+                    .Select(l => l.Trim())
+                    .ToList();
+            }
             else
             {
-                files.Add("System.Windows.Forms.dll");                
-                files.Add("System.Drawing.dll");
-                files.Add("System.Web.dll");
-                files.Add("System.Xml.Linq.dll");                
-                files.Add("System.Data.dll");
-                files.Add("System.Data.SqlClient.dll");
-                files.Add("netstandard.dll");
+                files = new List<string>();
             }
         }
 
         private static void LoadPaths()
         {
             paths.Clear();
-            paths.Add(Utils.GetAssemblyPath());
-            paths.Add(Utils.GetDotNetPath());            
+
+            string baseDir = Utils.GetAssemblyPath();
+
+            paths.Add(baseDir);
+            paths.Add(Path.Combine(baseDir, "RefsDir"));
+            //paths.Add(Path.Combine(baseDir, "Refs"));
         }
 
         private void btnSave_Click(object sender, EventArgs e)
         {
             var full = Path.GetFullPath(refsFile);
-            var path = Path.GetDirectoryName(full);
+            var dir = Path.GetDirectoryName(full);
 
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
+            if (!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
 
             File.WriteAllText(full, txtFiles.Text);
             Close();
@@ -85,18 +86,48 @@ namespace WinFormApp
 
             foreach (var file in files)
             {
-                foreach (var path in paths)
+                if (string.IsNullOrWhiteSpace(file))
+                    continue;
+
+                if (Path.IsPathRooted(file))
                 {
-                    var full = Path.Combine(path, file);
+                    if (File.Exists(file))
+                        result.Add(Path.GetFullPath(file));
+
+                    continue;
+                }
+
+                foreach (var path in paths.Distinct(StringComparer.OrdinalIgnoreCase))
+                {
+                    if (!Directory.Exists(path))
+                        continue;
+
+                    string full = Path.Combine(path, file);
+
                     if (File.Exists(full))
                     {
-                        result.Add(full);
-                        continue;
+                        result.Add(Path.GetFullPath(full));
+                        break;
+                    }
+
+                    string fileName = Path.GetFileName(file);
+
+                    if (!string.Equals(fileName, file, StringComparison.OrdinalIgnoreCase))
+                    {
+                        full = Path.Combine(path, fileName);
+
+                        if (File.Exists(full))
+                        {
+                            result.Add(Path.GetFullPath(full));
+                            break;
+                        }
                     }
                 }
             }
 
-            return result;
+            return result
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
         }
     }
 }

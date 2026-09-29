@@ -317,7 +317,10 @@ public class Tests
 {
     public void Execute()
     {
-        Print($""[GROUP]"");
+		Print(""[TEST] Version: "");
+		Console.WriteLine(Environment.Version);
+        
+		Print($""[GROUP]"");
 
         Print(""[TEST] First test"");
         Print(""Result for first test"") ; //<-- actual result

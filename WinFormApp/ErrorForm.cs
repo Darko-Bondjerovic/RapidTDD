@@ -18,10 +18,10 @@ namespace WinFormApp
             ErrorsListView.Columns.Add(new ColumnHeader() { Width = 1900 });
             ErrorsListView.HeaderStyle = ColumnHeaderStyle.None;
 
-            ContextMenu cntxMnu = new ContextMenu();
-            var item = cntxMnu.MenuItems.Add("Copy text");
-            item.Click += CopyItemClick;
-            ErrorsListView.ContextMenu = cntxMnu;
+            ContextMenuStrip cntxMnu = new ContextMenuStrip();
+	    var item = cntxMnu.Items.Add("Copy text");
+	    item.Click += CopyItemClick;
+	    ErrorsListView.ContextMenuStrip = cntxMnu;
         }
 
         private void ErrorsListView_Click(object sender, EventArgs e)

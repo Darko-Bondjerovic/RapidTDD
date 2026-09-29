@@ -37,14 +37,14 @@ namespace WinFormApp
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(499, 21);
-            this.pictureBox1.Margin = new System.Windows.Forms.Padding(2);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(60, 57);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox1.TabIndex = 0;
-            this.pictureBox1.TabStop = false;
+            // this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
+            // this.pictureBox1.Location = new System.Drawing.Point(499, 21);
+            // this.pictureBox1.Margin = new System.Windows.Forms.Padding(2);
+            // this.pictureBox1.Name = "pictureBox1";
+            // this.pictureBox1.Size = new System.Drawing.Size(60, 57);
+            // this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            // this.pictureBox1.TabIndex = 0;
+            // this.pictureBox1.TabStop = false;
             // 
             // label1
             // 
@@ -62,7 +62,7 @@ namespace WinFormApp
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Snow;
-            this.ClientSize = new System.Drawing.Size(570, 286);
+            this.ClientSize = new System.Drawing.Size(470, 286);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.label1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;

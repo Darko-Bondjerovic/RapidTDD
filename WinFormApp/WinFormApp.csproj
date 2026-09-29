@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net481</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>WinFormApp</RootNamespace>
     <AssemblyName>RapidTDD</AssemblyName>
@@ -13,6 +13,8 @@
     <Deterministic>false</Deterministic>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+    <NoWarn>$(NoWarn);WFO1000</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -31,9 +33,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DockPanelSuite" Version="3.0.6" />
-    <PackageReference Include="DockPanelSuite.ThemeVS2015" Version="3.0.6" />
-    <PackageReference Include="FCTB" Version="2.16.24" />
+    <PackageReference Include="DockPanelSuite" Version="3.1.1" />
+    <PackageReference Include="DockPanelSuite.ThemeVS2015" Version="3.1.1" />
+
+    <ProjectReference Include="..\FastColoredTextBox\FastColoredTextBox.csproj" />
 
     <PackageReference Include="Humanizer.Core" Version="2.14.1" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.1" />
@@ -62,14 +65,18 @@
   </ItemGroup>
 
   <ItemGroup>  
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Web" />
     <EmbeddedResource Include="Resources\ColorThemes.txt" />
 
-    <Content Include="Resources\No.png" />
-    <Content Include="Resources\Yes.png" />
-    <Content Include="TestsView\images\No.png" />
-    <Content Include="TestsView\images\Yes.png" />
+<EmbeddedResource Include="TestsView\images\No.png">
+  <LogicalName>WinFormApp.TestsView.images.No.png</LogicalName>
+</EmbeddedResource>
+<EmbeddedResource Include="TestsView\images\Yes.png">
+  <LogicalName>WinFormApp.TestsView.images.Yes.png</LogicalName>
+</EmbeddedResource>
+<EmbeddedResource Include="TestsView\images\exclamation 48.png">
+  <LogicalName>WinFormApp.TestsView.images.exclamation 48.png</LogicalName>
+</EmbeddedResource>   
+
     <Content Include="TDD.ico" />
   </ItemGroup>
 
