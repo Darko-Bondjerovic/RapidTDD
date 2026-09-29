@@ -6,7 +6,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>WinFormApp</RootNamespace>
     <AssemblyName>RapidTDD</AssemblyName>
-    <ApplicationIcon>TDD.ico</ApplicationIcon>
+    <ApplicationIcon>TDD9.ico</ApplicationIcon>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
@@ -14,7 +14,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
-    <NoWarn>$(NoWarn);WFO1000</NoWarn>
+    
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">

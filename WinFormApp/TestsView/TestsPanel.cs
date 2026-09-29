@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using System.ComponentModel;
 
 namespace DiffNamespace
 {
@@ -8,6 +9,7 @@ namespace DiffNamespace
     {
         string _testsfn = "";
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string TestsFileName
         {
             get { return _testsfn; }

@@ -6,6 +6,7 @@ rmdir /s /q FastColoredTextBox\bin
 rmdir /s /q FastColoredTextBox\obj
 
 dotnet restore RapidTDD.sln
-dotnet build RapidTDD.sln -c Release --no-restore
+rem dotnet build RapidTDD.sln -c Release --no-restore
+dotnet build -c Build --no-restore
 
-rem pause
+pause

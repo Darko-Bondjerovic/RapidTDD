@@ -1,9 +1,10 @@
-﻿using DiffNamespace;
-using System;
+﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using DiffNamespace;
 using WeifenLuo.WinFormsUI.Docking;
 using WinFormApp.TestsView;
 
@@ -16,14 +17,14 @@ namespace WinFormApp
             public bool doBuild = true;
             public bool isHidden = false;
             public string fileName = "";
-        }        
+        }
 
         public Action WhenClosingForm = () => { };
 
         private string[] ColsNames = new string[] { "Build", "Show" };
 
         static int IsHidenColumnIndex = 1;
-        
+
         private MainForm main = null;
         private TestsForm tstf = null;
 
@@ -36,19 +37,17 @@ namespace WinFormApp
             return state ? "☒" : "☐"; // U+2612/U+2610
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string RpdFull
         {
-            get
-            {
-                return rpdFull;
-            }
+            get { return rpdFull; }
             set
             {
                 rpdFull = value;
                 this.Text = Path.GetFileName(rpdFull);
-                rpdPath = Path.GetDirectoryName(rpdFull);                
+                rpdPath = Path.GetDirectoryName(rpdFull);
             }
-        }        
+        }
 
         public ProjectForm(MainForm main, TestsForm tstf)
         {
@@ -57,7 +56,7 @@ namespace WinFormApp
             this.main = main;
             this.tstf = tstf;
 
-            this.CloseButtonVisible = false;            
+            this.CloseButtonVisible = false;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.SizableToolWindow;
 
@@ -65,12 +64,12 @@ namespace WinFormApp
             MakePopupMenu();
         }
 
-        #region ListViewPart        
+        #region ListViewPart
 
 
         private void SetListViewUI()
         {
-            listView1.HeaderStyle = ColumnHeaderStyle.Clickable;            
+            listView1.HeaderStyle = ColumnHeaderStyle.Clickable;
 
             // set this Tag before SetColumnCaption
             foreach (ColumnHeader col in listView1.Columns)
@@ -79,7 +78,7 @@ namespace WinFormApp
             SetColumnsCaptions();
 
             listView1.MouseDown += ListView1_MouseDown;
-            listView1.ColumnClick += ListView1_ColumnClick;            
+            listView1.ColumnClick += ListView1_ColumnClick;
         }
 
         private bool ChangeColChecked(ColumnClickEventArgs e)
@@ -166,23 +165,29 @@ namespace WinFormApp
         }
 
         private void MakePopupMenu()
-	{
-	    ContextMenuStrip cntxMnu = new ContextMenuStrip();
+        {
+            ContextMenuStrip cntxMnu = new ContextMenuStrip();
 
-	    var item = cntxMnu.Items.Add("Copy full path");
-	    item.Click += CopyFullPathClick;
+            var item = cntxMnu.Items.Add("Copy full path");
+            item.Click += CopyFullPathClick;
 
-	    var item2 = cntxMnu.Items.Add("Remove item");
-	    item2.Click += RemoveItemFormListClick;
+            var item2 = cntxMnu.Items.Add("Remove item");
+            item2.Click += RemoveItemFormListClick;
 
-	    listView1.ContextMenuStrip = cntxMnu;
-	    pnlTestFile.ContextMenuStrip = cntxMnu;
-	}
+            listView1.ContextMenuStrip = cntxMnu;
+            pnlTestFile.ContextMenuStrip = cntxMnu;
+        }
 
         private void RemoveItemFormListClick(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Remove item, are you sure?", "Confirm",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
+            if (
+                MessageBox.Show(
+                    "Remove item, are you sure?",
+                    "Confirm",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning
+                ) == DialogResult.No
+            )
                 return;
 
             Control source = GetSourceControl(sender);
@@ -213,11 +218,11 @@ namespace WinFormApp
         }
 
         private static Control GetSourceControl(object sender)
-	{
-	    var menu = sender as ToolStripMenuItem;
-	    var parent = menu?.Owner as ContextMenuStrip;
-	    return parent?.SourceControl;
-	}     
+        {
+            var menu = sender as ToolStripMenuItem;
+            var parent = menu?.Owner as ContextMenuStrip;
+            return parent?.SourceControl;
+        }
 
         private void CopyFullPathClick(object sender, EventArgs e)
         {
@@ -238,18 +243,19 @@ namespace WinFormApp
                 Clipboard.SetText(full);
         }
 
-        #endregion ListViewPart        
+        #endregion ListViewPart
 
         private void OpenFilesFromXml(XDocument xdoc)
         {
-            var result = xdoc.Root.Descendants("File")
-                .Select(o =>
-                    new FileData()
-                    { 
-                        doBuild = Convert.ToBoolean(o.Element("make").Value),
-                        isHidden = !Convert.ToBoolean(o.Element("show").Value),
-                        fileName = MakeFullPath(rpdPath, o.Element("full").Value)
-                    }).ToList();
+            var result = xdoc
+                .Root.Descendants("File")
+                .Select(o => new FileData()
+                {
+                    doBuild = Convert.ToBoolean(o.Element("make").Value),
+                    isHidden = !Convert.ToBoolean(o.Element("show").Value),
+                    fileName = MakeFullPath(rpdPath, o.Element("full").Value),
+                })
+                .ToList();
 
             foreach (var f in result)
             {
@@ -295,43 +301,47 @@ namespace WinFormApp
             Uri fromUri = new Uri(root);
             Uri toUri = new Uri(full);
 
-            if (fromUri.Scheme != toUri.Scheme) 
-                return full;  // path can't be made relative.
+            if (fromUri.Scheme != toUri.Scheme)
+                return full; // path can't be made relative.
 
             Uri relativeUri = fromUri.MakeRelativeUri(toUri);
             String relativePath = Uri.UnescapeDataString(relativeUri.ToString());
 
             if (toUri.Scheme.Equals("file", StringComparison.InvariantCultureIgnoreCase))
-                relativePath = relativePath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+                relativePath = relativePath.Replace(
+                    Path.AltDirectorySeparatorChar,
+                    Path.DirectorySeparatorChar
+                );
 
             return relativePath;
         }
 
         public void SaveRpdFile()
         {
-            var xdoc = new XDocument(
-                new XElement("RapidTDD"));
+            var xdoc = new XDocument(new XElement("RapidTDD"));
 
             var testFN = tstf.tstPanel.TestsFileName;
             var testXml = new XElement("Test", MakeRelativePath(rpdPath, testFN));
             xdoc.Root.Add(testXml);
-            
+
             var filesXml = new XElement("Files");
             foreach (var o in main.editors)
-            {                
+            {
                 var fileXml = new XElement(
-                    new XElement("File",
-                    new XElement("make", o.DoBuild),
-                    new XElement("show", !o.IsHidden),
-                    new XElement("full", MakeRelativePath(
-                            rpdPath, o.FileName as string))));
+                    new XElement(
+                        "File",
+                        new XElement("make", o.DoBuild),
+                        new XElement("show", !o.IsHidden),
+                        new XElement("full", MakeRelativePath(rpdPath, o.FileName as string))
+                    )
+                );
 
-                 filesXml.Add(fileXml);
+                filesXml.Add(fileXml);
             }
-            xdoc.Root.Add(filesXml);            
+            xdoc.Root.Add(filesXml);
 
             xdoc.Save(RpdFull);
-        }        
+        }
 
         private void ProjectForm_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -360,19 +370,18 @@ namespace WinFormApp
         {
             listView1.Items.Clear();
 
-            foreach(var e in main.editors)
+            foreach (var e in main.editors)
             {
                 e.HideOnClose = true;
 
-                var row = new ListViewItem(new[] {
-                    chk(e.DoBuild), chk(!e.IsHidden), 
-                    e.TabName, e.FileName as string});
+                var row = new ListViewItem(
+                    new[] { chk(e.DoBuild), chk(!e.IsHidden), e.TabName, e.FileName as string }
+                );
 
                 listView1.Items.Add(row);
             }
-                        
-            this.pnlTestFile.Text = "Test file: " + 
-                Path.GetFileName(tstf.tstPanel.TestsFileName);
+
+            this.pnlTestFile.Text = "Test file: " + Path.GetFileName(tstf.tstPanel.TestsFileName);
         }
 
         public void CloseOpenedDocs()
@@ -382,14 +391,14 @@ namespace WinFormApp
 
         internal void LoadExisting(string rpdfile)
         {
-            if (!File.Exists(rpdfile))            
+            if (!File.Exists(rpdfile))
             {
                 MessageBox.Show($"Project file does not exists:\n{rpdfile}");
                 return;
             }
 
-            this.RpdFull = rpdfile;            
-            CloseOpenedDocs();     
+            this.RpdFull = rpdfile;
+            CloseOpenedDocs();
             OpenRpdFileAndLoadData();
         }
 
