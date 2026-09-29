@@ -52,7 +52,7 @@
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(223, 34);
             this.label2.TabIndex = 2;
-            this.label2.Text = "Rapid TDD app";
+            this.label2.Text = "Rapid TDD .NET 9";
             // 
             // panel1
             // 
