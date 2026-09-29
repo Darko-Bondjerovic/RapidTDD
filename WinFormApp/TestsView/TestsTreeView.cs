@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using System.ComponentModel;
 
 namespace DiffNamespace
 {
@@ -22,6 +23,7 @@ namespace DiffNamespace
 
         public bool KeepOldTests = false;
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool TestsAreChanged { get; set; } = false;
 
         public enum Filter { all, pass, fail };

@@ -6,6 +6,7 @@ using System.IO;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
 using WinFormApp.Themes;
+using System.ComponentModel;
 
 namespace WinFormApp
 {
@@ -20,13 +21,18 @@ namespace WinFormApp
 
         public Action<EditForm> WhenActivated = edt => { };
 
+
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public object FileName { get; internal set; } = null;
+        
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string TabName
         {
             get { return Text; }
             set { Text = value; }
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]   
         public bool DoBuild { get; internal set; } = true;        
 
         private bool SplitEdit = true;

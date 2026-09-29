@@ -38,7 +38,7 @@ namespace WinFormApp
 
         public MainForm()
         {
-            InitializeComponent();
+            InitializeComponent();            
 
             findF2.Click += FindSymbol_Click;
             findShiftF2.Click += FindSymbol_Click;
