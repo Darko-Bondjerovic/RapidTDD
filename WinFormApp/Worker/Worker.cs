@@ -117,11 +117,14 @@ namespace WinFormApp
             {
                 return false;
             }
+            // Poredi i po IMENU fajla: ista assembly (npr. System.Drawing.dll) iz ref packa i iz
+            // runtime foldera bi dala dupli identitet (CS1703) i pogresne tipove.
+            string name = Path.GetFileName(file);
             return References.Any(r =>
                 !string.IsNullOrEmpty(r.FilePath)
                 && string.Equals(
-                    Path.GetFullPath(r.FilePath),
-                    file,
+                    Path.GetFileName(r.FilePath),
+                    name,
                     StringComparison.OrdinalIgnoreCase
                 )
             );
@@ -227,46 +230,86 @@ namespace WinFormApp
             }
         }
 
+        // Nalazi <dotnetRoot>/packs/<packName>/<verzija>/ref/net<major>.0 (ili najnoviji net*.0 koji postoji).
+        // Verzije se porede kao Version (9.0.10 > 9.0.9), a ne kao string.
+        private static string FindRefPackDir(string packName)
+        {
+            var roots = new List<string>();
+            try
+            {
+                // .../dotnet/shared/Microsoft.NETCore.App/9.0.x  ->  .../dotnet
+                var rt = Path.GetDirectoryName(typeof(object).Assembly.Location);
+                var root = Directory.GetParent(rt)?.Parent?.FullName;
+                if (!string.IsNullOrEmpty(root)) roots.Add(root);
+            }
+            catch { }
+            roots.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet"));
+            roots.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "dotnet"));
+            var env = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+            if (!string.IsNullOrEmpty(env)) roots.Add(env);
+
+            int major = Environment.Version.Major;
+
+            foreach (var root in roots.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                var pack = Path.Combine(root, "packs", packName);
+                if (!Directory.Exists(pack)) continue;
+
+                var versions = Directory.GetDirectories(pack)
+                    .Select(d =>
+                    {
+                        Version v;
+                        return new { Dir = d, Ok = Version.TryParse(Path.GetFileName(d).Split('-')[0], out v), V = v };
+                    })
+                    .Where(x => x.Ok)
+                    .OrderByDescending(x => x.V.Major == major) // prvo verzije koje odgovaraju runtime-u
+                    .ThenByDescending(x => x.V)
+                    .ToList();
+
+                foreach (var ver in versions)
+                {
+                    var refDir = Path.Combine(ver.Dir, "ref");
+                    if (!Directory.Exists(refDir)) continue;
+
+                    var tfm = Directory.GetDirectories(refDir, "net*")
+                        .OrderByDescending(d => d.EndsWith("net" + major + ".0", StringComparison.OrdinalIgnoreCase))
+                        .ThenByDescending(d => d, StringComparer.OrdinalIgnoreCase)
+                        .FirstOrDefault();
+                    if (tfm != null) return tfm;
+                }
+            }
+            return null;
+        }
+
+        private void AddAllDllsFrom(string dir)
+        {
+            if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir)) return;
+            foreach (string dll in Directory.GetFiles(dir, "*.dll"))
+            {
+                try { AddAssembly(dll); } catch { }
+            }
+        }
+
         public void AddNet9AllReferences()
         {
-            string dotnet = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-                "dotnet"
-            );
-            string packs = Path.Combine(dotnet, "packs");
-            if (!Directory.Exists(packs))
-                return;
+            // 1. Core ref pack (System.Runtime, System.Collections, ...)
+            var core = FindRefPackDir("Microsoft.NETCore.App.Ref");
+            AddAllDllsFrom(core);
 
-            // Samo ovaj pack je dovoljan za 99% koda
-            var coreAppRef = Directory
-                .GetDirectories(packs, "Microsoft.NETCore.App.Ref")
-                .FirstOrDefault();
-            if (coreAppRef == null)
-                return;
-
-            var latestVersion = Directory
-                .GetDirectories(coreAppRef)
-                .OrderByDescending(x => x)
-                .FirstOrDefault();
-            if (latestVersion == null)
-                return;
-
-            var refRoot = Path.Combine(latestVersion, "ref", "net9.0");
-            if (!Directory.Exists(refRoot))
-                return;
-
-            foreach (string dll in Directory.GetFiles(refRoot, "*.dll"))
+            // 2. WinForms ref pack: System.Windows.Forms, System.Drawing.Common,
+            //    System.Windows.Forms.Primitives, System.Drawing.Primitives ...
+            //    MORA biti iz ISTOG (reference) skupa - NE mesati sa implementacionim DLL-ovima iz runtime foldera.
+            var desktop = FindRefPackDir("Microsoft.WindowsDesktop.App.Ref");
+            if (desktop != null)
             {
-                try
-                {
-                    AddAssembly(dll);
-                }
-                catch { }
+                AddAllDllsFrom(desktop);
             }
-
-            // Opciono, ako ti treba WinForms/WPF
-            AddAssembly(typeof(System.Windows.Forms.Form));
-            AddAssembly(typeof(System.Drawing.Color));
+            else
+            {
+                // Fallback: runtime implementacija WinForms-a (radi, ali je manje cisto)
+                var rt = Path.GetDirectoryName(typeof(System.Windows.Forms.Form).Assembly.Location);
+                AddAllDllsFrom(rt);
+            }
         }
 
         public void AddNetFrameworkDefaultReferences()
