@@ -13,6 +13,7 @@ namespace WinFormApp
 #else
         static string refsFile = @"RefsDir\references.txt";
 #endif
+
         static List<string> paths = new List<string>();
         static List<string> files = new List<string>();
 
@@ -20,11 +21,15 @@ namespace WinFormApp
         {
             InitializeComponent();
             StartPosition = FormStartPosition.CenterScreen;
+
             LoadPaths();
             LoadFiles();
+
             txtFiles.Text = string.Join(Environment.NewLine, files);
             txtPaths.Text = string.Join(Environment.NewLine, paths);
+
             Text = Path.GetFullPath(refsFile);
+
             Load += RefsForm_Load;
         }
 
@@ -45,33 +50,29 @@ namespace WinFormApp
             }
             else
             {
-                // Ovo više ne postoji u .NET 9, ostavi samo ono što ti treba za custom dll-ove
-                files = new List<string>
-                {
-                    "System.Windows.Forms.dll",
-                    "System.Drawing.dll",
-                    "netstandard.dll",
-                    // OVDE KUCAJ TVOJE: npr. Dapper.dll, Newtonsoft.Json.dll
-                };
+                files = new List<string>();
             }
         }
 
         private static void LoadPaths()
         {
             paths.Clear();
-            paths.Add(Utils.GetAssemblyPath()); // AppContext.BaseDirectory - gde je exe
-            paths.Add(Path.Combine(Utils.GetAssemblyPath(), "RefsDir"));
-            paths.Add(Path.Combine(Utils.GetAssemblyPath(), "Refs"));
-            paths.Add(Utils.GetDotNetPath()); // runtime folder
-            paths.Add(Utils.GetNet9RefPath()); // C:\Program Files\dotnet\packs\...\ref\net9.0
+
+            string baseDir = Utils.GetAssemblyPath();
+
+            paths.Add(baseDir);
+            paths.Add(Path.Combine(baseDir, "RefsDir"));
+            //paths.Add(Path.Combine(baseDir, "Refs"));
         }
 
         private void btnSave_Click(object sender, EventArgs e)
         {
             var full = Path.GetFullPath(refsFile);
             var dir = Path.GetDirectoryName(full);
+
             if (!Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
+
             File.WriteAllText(full, txtFiles.Text);
             Close();
         }
@@ -80,41 +81,53 @@ namespace WinFormApp
         {
             LoadPaths();
             LoadFiles();
+
             var result = new List<string>();
 
             foreach (var file in files)
             {
-                // 1. Ako je upisana apsolutna putanja - uzmi direktno
-                if (Path.IsPathRooted(file) && File.Exists(file))
+                if (string.IsNullOrWhiteSpace(file))
+                    continue;
+
+                if (Path.IsPathRooted(file))
                 {
-                    result.Add(file);
+                    if (File.Exists(file))
+                        result.Add(Path.GetFullPath(file));
+
                     continue;
                 }
 
-                var fileName = Path.GetFileName(file);
-
-                // 2. Traži po svim path-evima
-                foreach (var path in paths.Distinct())
+                foreach (var path in paths.Distinct(StringComparer.OrdinalIgnoreCase))
                 {
-                    if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
+                    if (!Directory.Exists(path))
                         continue;
 
-                    var full = Path.Combine(path, fileName);
+                    string full = Path.Combine(path, file);
+
                     if (File.Exists(full))
                     {
-                        result.Add(full);
+                        result.Add(Path.GetFullPath(full));
                         break;
                     }
-                    // probaj i ako je u txt upisano "RefsDir\Dapper.dll"
-                    var full2 = Path.Combine(path, file);
-                    if (File.Exists(full2))
+
+                    string fileName = Path.GetFileName(file);
+
+                    if (!string.Equals(fileName, file, StringComparison.OrdinalIgnoreCase))
                     {
-                        result.Add(full2);
-                        break;
+                        full = Path.Combine(path, fileName);
+
+                        if (File.Exists(full))
+                        {
+                            result.Add(Path.GetFullPath(full));
+                            break;
+                        }
                     }
                 }
             }
-            return result.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+            return result
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
         }
     }
 }
