@@ -91,6 +91,7 @@ namespace FastColoredTextBoxNS
         private int lineInterval;
         private Color lineNumberColor;
         private uint lineNumberStartValue;
+        private LineNumberFormatting lineNumberFormatting;
         private int lineSelectFrom;
         private TextSource lines;
         private IntPtr m_hImc;
@@ -205,7 +206,8 @@ namespace FastColoredTextBoxNS
             WordWrapAutoIndent = true;
             FoldedBlocks = new Dictionary<int, int>();
             AutoCompleteBrackets = false;
-            AutoIndentCharsPatterns = @"^\s*[\w\.]+\s*(?<range>=)\s*(?<range>[^;]+);";
+            AutoIndentCharsPatterns = @"^\s*[\w\.]+(\s\w+)?\s*(?<range>=)\s*(?<range>[^;=]+);
+^\s*(case|default)\s*[^:]*(?<range>:)\s*(?<range>[^;]+);";
             AutoIndentChars = true;
             CaretBlinking = true;
             ServiceColors = new ServiceColors();
@@ -623,6 +625,22 @@ namespace FastColoredTextBoxNS
             set
             {
                 lineNumberStartValue = value;
+                needRecalc = true;
+                Invalidate();
+            }
+        }
+
+        /// <summary>
+        /// To create your own line number formatting, you have to implement the abstract LineNumberFormatting class
+        /// </summary>
+        [DefaultValue(typeof(LineNumberFormatting), null)]
+        [Description("Format of string displayed when ShowLineNumbers = true")]
+        public LineNumberFormatting LineNumberFormatting
+        {
+            get { return lineNumberFormatting; }
+            set
+            {
+                lineNumberFormatting = value;
                 needRecalc = true;
                 Invalidate();
             }
@@ -1667,6 +1685,22 @@ namespace FastColoredTextBoxNS
         [Browsable(true)]
         [Description("Occurs when mouse is moving over text and tooltip is needed.")]
         public event EventHandler<ToolTipNeededEventArgs> ToolTipNeeded;
+
+        /// <summary>
+        /// Default size of the markers
+        /// </summary>
+        [Browsable(false)]
+        [DefaultValue(0)]
+        public int DefaultMarkerSize
+        {
+            get { return defaultMarkerSize; }
+            set
+            {
+                defaultMarkerSize = value;
+                Invalidate();
+            }
+        }
+        private int defaultMarkerSize = 8;
 
         /// <summary>
         /// Removes all hints
@@ -3363,15 +3397,26 @@ namespace FastColoredTextBoxNS
         {
             if (ShowScrollBars)
             {
-                //some magic for update scrolls
-                base.AutoScrollMinSize -= new Size(1, 0);
-                base.AutoScrollMinSize += new Size(1, 0);
+                OnMagicUpdateScrollBars();
             }
             else
                 PerformLayout();
 
             if(IsHandleCreated)
                 BeginInvoke((System.Windows.Forms.MethodInvoker)OnScrollbarsUpdated);
+        }
+
+        private void OnMagicUpdateScrollBars()
+        {
+            if (this.InvokeRequired)
+            {
+                Invoke(new System.Windows.Forms.MethodInvoker(OnMagicUpdateScrollBars));
+            }
+            else
+            {
+                base.AutoScrollMinSize -= new Size(1, 0);
+                base.AutoScrollMinSize += new Size(1, 0);
+            }
         }
 
         protected virtual void OnScrollbarsUpdated()
@@ -4811,7 +4856,7 @@ namespace FastColoredTextBoxNS
 
         protected override bool IsInputKey(Keys keyData)
         {
-            if (keyData == Keys.Tab && !AcceptsTab)
+            if ((keyData == Keys.Tab || keyData == (Keys.Shift | Keys.Tab)) && !AcceptsTab)
                 return false;
             if (keyData == Keys.Enter && !AcceptsReturn)
                 return false;
@@ -5045,18 +5090,25 @@ namespace FastColoredTextBoxNS
                                                        e.Graphics, e.ClipRectangle));
                 //draw line number
                 if (ShowLineNumbers)
-                using (var lineNumberBrush = new SolidBrush(LineNumberColor))
-                    e.Graphics.DrawString((iLine + lineNumberStartValue).ToString(), Font, lineNumberBrush,
-                                new RectangleF(-10, y, LeftIndent - minLeftIndent - 2 + 10, CharHeight + (int)(lineInterval * 0.5f)),
-                                new StringFormat(StringFormatFlags.DirectionRightToLeft) { LineAlignment = StringAlignment.Center });
+                {
+                    var lineNumber = iLine + (int)lineNumberStartValue;
+                    var lineNumberText = LineNumberFormatting?.FromLineNumberToString(lineNumber) ?? $"{lineNumber}";
+
+                    using (var lineNumberBrush = new SolidBrush(LineNumberColor))
+                        e.Graphics.DrawString(lineNumberText, Font, lineNumberBrush,
+                                               new RectangleF(-10, y, LeftIndent - minLeftIndent - 2 + 10, CharHeight + (int)(lineInterval * 0.5f)),
+                                               new StringFormat(StringFormatFlags.DirectionRightToLeft) { LineAlignment = StringAlignment.Center });
+                }
 
                 //create markers
+                int markerSize = (int)(defaultMarkerSize * zoom / 100f);
+                int markerRadius = markerSize / 2;
                 if (lineInfo.VisibleState == VisibleState.StartOfHiddenBlock)
-                    visibleMarkers.Add(new ExpandFoldingMarker(iLine, new Rectangle(LeftIndentLine - 4, y + CharHeight/2 - 3, 8, 8)));
+                    visibleMarkers.Add(new ExpandFoldingMarker(iLine, new Rectangle(LeftIndentLine - markerRadius, y + CharHeight/2 - markerRadius + 1, markerSize, markerSize)));
 
                 if (!string.IsNullOrEmpty(line.FoldingStartMarker) && lineInfo.VisibleState == VisibleState.Visible &&
                     string.IsNullOrEmpty(line.FoldingEndMarker))
-                        visibleMarkers.Add(new CollapseFoldingMarker(iLine, new Rectangle(LeftIndentLine - 4, y + CharHeight/2 - 3, 8, 8)));
+                        visibleMarkers.Add(new CollapseFoldingMarker(iLine, new Rectangle(LeftIndentLine - markerRadius, y + CharHeight/2 - markerRadius + 1, markerSize, markerSize)));
 
                 if (lineInfo.VisibleState == VisibleState.Visible && !string.IsNullOrEmpty(line.FoldingEndMarker) &&
                     string.IsNullOrEmpty(line.FoldingStartMarker))
@@ -5645,7 +5697,6 @@ namespace FastColoredTextBoxNS
             }
         }
 
-
         public void ChangeFontSize(int step)
         {
             var points = Font.SizeInPoints;
@@ -5655,7 +5706,7 @@ namespace FastColoredTextBoxNS
                 var newPoints = points + step * 72f / dpi;
                 if(newPoints < 1f) return;
                 var k = newPoints / originalFont.SizeInPoints;
-                 Zoom = (int)(100 * k);
+                Zoom = (int)Math.Round(100 * k);
             }
         }
 
@@ -5681,7 +5732,7 @@ namespace FastColoredTextBoxNS
 
         private void DoZoom(float koeff)
         {
-            //remmber first displayed line
+            //remember first displayed line
             var iLine = YtoLineIndex(VerticalScroll.Value);
             //
             var points = originalFont.SizeInPoints;
@@ -6598,19 +6649,12 @@ namespace FastColoredTextBoxNS
             if (from == to)
                 return;
 
-            //find first non empty line
-            for (; from <= to; from++)
-            {
-                if (GetLineText(from).Trim().Length > 0)
-                {
-                    //hide lines
-                    for (int i = from + 1; i <= to; i++)
-                        SetVisibleState(i, VisibleState.Hidden);
-                    SetVisibleState(from, VisibleState.StartOfHiddenBlock);
-                    Invalidate();
-                    break;
-                }
-            }
+            //hide lines
+            for (int i = from + 1; i <= to; i++)
+                SetVisibleState(i, VisibleState.Hidden);
+            SetVisibleState(from, VisibleState.StartOfHiddenBlock);
+            Invalidate();
+
             //Move caret outside
             from = Math.Min(fromLine, toLine);
             to = Math.Max(fromLine, toLine);
@@ -7587,10 +7631,19 @@ window.status = ""#print"";
 
             if (form.ShowDialog() == DialogResult.OK)
             {
-                int line = Math.Min(LinesCount - 1, Math.Max(0, form.SelectedLineNumber - 1));
-                Selection = new Range(this, 0, line, 0, line);
-                DoSelectionVisible();
+                SetSelectedLine(form.SelectedLineNumber);
             }
+        }
+
+        /// <summary>
+        /// Set current line number and make it visible
+        /// </summary>
+        /// <param name="lineNumberToSelect"></param>
+        public void SetSelectedLine(int lineNumberToSelect)
+        {
+            var line = Math.Min(LinesCount - 1, Math.Max(0, lineNumberToSelect - 1));
+            Selection = new Range(this, 0, line, 0, line);
+            DoSelectionVisible();
         }
 
         /// <summary>

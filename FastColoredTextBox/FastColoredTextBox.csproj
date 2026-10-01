@@ -9,8 +9,8 @@
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <PlatformTarget>AnyCPU</PlatformTarget>
-   <EnableWindowsFormsAnalyzer>false</EnableWindowsFormsAnalyzer>
-<NoWarn>$(NoWarn);WFO1000</NoWarn>
+    <EnableWindowsFormsAnalyzer>false</EnableWindowsFormsAnalyzer>
+    <NoWarn>$(NoWarn);WFO1000</NoWarn>
   </PropertyGroup>
 
 </Project>

@@ -9,4 +9,4 @@ dotnet restore RapidTDD.sln
 rem dotnet build RapidTDD.sln -c Release --no-restore
 dotnet build -c Build --no-restore
 
-pause
+REM pause
