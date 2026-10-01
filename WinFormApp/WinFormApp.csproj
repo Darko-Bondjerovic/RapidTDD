@@ -66,16 +66,16 @@
 
   <ItemGroup>  
     <EmbeddedResource Include="Resources\ColorThemes.txt" />
-
-<EmbeddedResource Include="TestsView\images\No.png">
-  <LogicalName>WinFormApp.TestsView.images.No.png</LogicalName>
-</EmbeddedResource>
-<EmbeddedResource Include="TestsView\images\Yes.png">
-  <LogicalName>WinFormApp.TestsView.images.Yes.png</LogicalName>
-</EmbeddedResource>
-<EmbeddedResource Include="TestsView\images\exclamation 48.png">
-  <LogicalName>WinFormApp.TestsView.images.exclamation 48.png</LogicalName>
-</EmbeddedResource>   
+    <EmbeddedResource Include="Resources\About.png" />
+    <EmbeddedResource Include="TestsView\images\No.png">
+      <LogicalName>WinFormApp.TestsView.images.No.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TestsView\images\Yes.png">
+      <LogicalName>WinFormApp.TestsView.images.Yes.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TestsView\images\exclamation 48.png">
+      <LogicalName>WinFormApp.TestsView.images.exclamation 48.png</LogicalName>
+    </EmbeddedResource>   
 
     <Content Include="TDD.ico" />
   </ItemGroup>
