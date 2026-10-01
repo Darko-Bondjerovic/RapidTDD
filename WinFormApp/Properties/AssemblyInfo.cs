@@ -6,12 +6,12 @@ using System.Runtime.Versioning;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("WinFormApp")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("RapidTDD")]
+[assembly: AssemblyDescription("Rapid Test Driven Development")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("WinFormApp")]
-[assembly: AssemblyCopyright("Copyright ©  2022")]
+[assembly: AssemblyCompany("Bondjasan")]
+[assembly: AssemblyProduct("RapidTDD")]
+[assembly: AssemblyCopyright("Copyright © 2026 by Darko Bondjerovic")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

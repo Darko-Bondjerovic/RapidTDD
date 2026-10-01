@@ -5,7 +5,9 @@
     <TargetFramework>net9.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>WinFormApp</RootNamespace>
+    <ApplicationId>RapidTDD</ApplicationId>
     <AssemblyName>RapidTDD</AssemblyName>
+    <ApplicationTitle>RapidTDD</ApplicationTitle>
     <ApplicationIcon>TDD9.ico</ApplicationIcon>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -77,7 +79,7 @@
       <LogicalName>WinFormApp.TestsView.images.exclamation 48.png</LogicalName>
     </EmbeddedResource>   
 
-    <Content Include="TDD.ico" />
+    <Content Include="TDD9.ico" />
   </ItemGroup>
 
 </Project>
