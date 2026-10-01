@@ -240,26 +240,45 @@ namespace WinFormApp
                 // .../dotnet/shared/Microsoft.NETCore.App/9.0.x  ->  .../dotnet
                 var rt = Path.GetDirectoryName(typeof(object).Assembly.Location);
                 var root = Directory.GetParent(rt)?.Parent?.FullName;
-                if (!string.IsNullOrEmpty(root)) roots.Add(root);
+                if (!string.IsNullOrEmpty(root))
+                    roots.Add(root);
             }
             catch { }
-            roots.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet"));
-            roots.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "dotnet"));
+            roots.Add(
+                Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                    "dotnet"
+                )
+            );
+            roots.Add(
+                Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    "dotnet"
+                )
+            );
             var env = Environment.GetEnvironmentVariable("DOTNET_ROOT");
-            if (!string.IsNullOrEmpty(env)) roots.Add(env);
+            if (!string.IsNullOrEmpty(env))
+                roots.Add(env);
 
             int major = Environment.Version.Major;
 
             foreach (var root in roots.Distinct(StringComparer.OrdinalIgnoreCase))
             {
                 var pack = Path.Combine(root, "packs", packName);
-                if (!Directory.Exists(pack)) continue;
+                if (!Directory.Exists(pack))
+                    continue;
 
-                var versions = Directory.GetDirectories(pack)
+                var versions = Directory
+                    .GetDirectories(pack)
                     .Select(d =>
                     {
                         Version v;
-                        return new { Dir = d, Ok = Version.TryParse(Path.GetFileName(d).Split('-')[0], out v), V = v };
+                        return new
+                        {
+                            Dir = d,
+                            Ok = Version.TryParse(Path.GetFileName(d).Split('-')[0], out v),
+                            V = v,
+                        };
                     })
                     .Where(x => x.Ok)
                     .OrderByDescending(x => x.V.Major == major) // prvo verzije koje odgovaraju runtime-u
@@ -269,13 +288,18 @@ namespace WinFormApp
                 foreach (var ver in versions)
                 {
                     var refDir = Path.Combine(ver.Dir, "ref");
-                    if (!Directory.Exists(refDir)) continue;
+                    if (!Directory.Exists(refDir))
+                        continue;
 
-                    var tfm = Directory.GetDirectories(refDir, "net*")
-                        .OrderByDescending(d => d.EndsWith("net" + major + ".0", StringComparison.OrdinalIgnoreCase))
+                    var tfm = Directory
+                        .GetDirectories(refDir, "net*")
+                        .OrderByDescending(d =>
+                            d.EndsWith("net" + major + ".0", StringComparison.OrdinalIgnoreCase)
+                        )
                         .ThenByDescending(d => d, StringComparer.OrdinalIgnoreCase)
                         .FirstOrDefault();
-                    if (tfm != null) return tfm;
+                    if (tfm != null)
+                        return tfm;
                 }
             }
             return null;
@@ -283,10 +307,15 @@ namespace WinFormApp
 
         private void AddAllDllsFrom(string dir)
         {
-            if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir)) return;
+            if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir))
+                return;
             foreach (string dll in Directory.GetFiles(dir, "*.dll"))
             {
-                try { AddAssembly(dll); } catch { }
+                try
+                {
+                    AddAssembly(dll);
+                }
+                catch { }
             }
         }
 
@@ -651,11 +680,14 @@ namespace WinFormApp
 
             if (assembly != null)
             {
-                MainClassInfo main = Discoverer.FindStaticEntryMethod(assembly);
+                // Invoke the Main method of the compiled assembly, if it exists.
+                // can be without parameters e.g. public static void Main() or Main(string[] args)
+                InvokeMainMethod(assembly, args);
 
-                object program = Activator.CreateInstance(main.MainClass);
-
-                main.MainMethod.Invoke(program, new object[] { args });
+                //public static void Main(string[] args):
+                // MainClassInfo main = Discoverer.FindStaticEntryMethod(assembly);
+                // object program = Activator.CreateInstance(main.MainClass);
+                // main.MainMethod.Invoke(program, new object[] { args });
             }
 
             if (DoCoverage)
@@ -673,6 +705,54 @@ namespace WinFormApp
             }
 
             return _consoleOutput.GetOutput();
+        }
+
+        void InvokeMainMethod(Assembly assembly, string[] args)
+        {
+            var main = Discoverer.FindStaticEntryMethod(assembly);
+
+            if (main == null)
+                throw new Exception("No static entry method found.");
+
+            object program = null;
+            if (
+                !main.MainMethod.IsStatic
+                || (!main.MainClass.IsAbstract && !main.MainClass.IsSealed)
+            )
+            {
+                try
+                {
+                    if (!main.MainClass.IsAbstract || !main.MainClass.IsSealed)
+                        program = Activator.CreateInstance(main.MainClass.AsType());
+                }
+                catch
+                {
+                    program = null;
+                }
+            }
+
+            object target = main.MainMethod.IsStatic ? null : program;
+
+            var parameters = main.MainMethod.GetParameters();
+            object[] invokeArgs;
+
+            if (parameters.Length == 0)
+            {
+                invokeArgs = null; // Main()
+            }
+            else if (parameters.Length == 1 && parameters[0].ParameterType == typeof(string[]))
+            {
+                invokeArgs = new object[] { args ?? new string[0] }; // Main(string[] args)
+            }
+            else
+            {
+                throw new InvalidProgramException($"Unsupported Main signature: {main.MainMethod}");
+            }
+
+            var result = main.MainMethod.Invoke(target, invokeArgs);
+
+            if (result is Task taskResult)
+                taskResult.GetAwaiter().GetResult();
         }
 
         public static object GetPropValue(object src, string propName)
