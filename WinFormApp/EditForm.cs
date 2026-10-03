@@ -23,7 +23,7 @@ namespace WinFormApp
 
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public object FileName { get; internal set; } = null;
+        public string FileName { get; internal set; } = null;
         
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string TabName
@@ -195,10 +195,12 @@ public class Program
         public void LoadFile(string fileName)
         {
             this.FileName = fileName;
-            this.TabName = Path.GetFileName(fileName);
+            this.TabName = Path.GetFileName(fileName);   
+                   
             if (!string.IsNullOrEmpty(fileName))
             {
                 this.fctb.OpenFile(fileName);
+                this.ToolTipText = fileName;    
                 ConnectTwoEditors();
             }
         }
@@ -234,6 +236,7 @@ public class Program
 
                 this.TabName = Path.GetFileName(saveDlg.FileName);
                 this.FileName = saveDlg.FileName;
+                this.ToolTipText = this.FileName as string;    
             }
 
             try
@@ -266,75 +269,46 @@ public class Program
             return dialog;
         }
 
-//        internal void InsertDemoCode()
-//        {
-//            this.fctb.Text =
-//@"using System;
-
-//public class Program
-//{
-//    static public void Main(string[] args)
-//    {   
-//        Print(""Press F5 to execute tests:\n"");
-
-//        Assert(""text"", ""text"");
-//        Assert(""when?"", ""what?"");
-//    }
-
-//    static void Assert(string exp, string act)
-//    {
-//        if (act.Equals(exp))
-//            Print($""PASS [{exp}]==[{act}]"");
-//        else
-//            Print($""FAIL [{exp}]!=[{act}]"");
-//    }
-
-//    static void Print(string str = """")
-//    {
-//        Console.WriteLine(str);
-//    }
-//}";
-//}
-
         internal void InsertTestCode()
         {
             this.fctb.Text =
 @"using System;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
-//using System.Windows.Forms;
 
 public class Program
 {
     [STAThread]
     public static void Main(string[] args)
     {
-        //Console.WriteLine($"" |{ ""Left"",-7}|{ ""Right"",7}| "");
-
-        //var form = new Form();
-        //form.ShowDialog();
 
         new Tests().Execute();
     }
 }
 
+public static class AppPath
+{
+    public static string BaseFolder { get; set; } = AppContext.BaseDirectory;
+}
+
+
 public class Tests
 {
     public void Execute()
     {
-		Print(""[TEST] Version: "");
-		Console.WriteLine(Environment.Version);
+		Print($""[GROUP] Base tests"");
+
+        Print(""[TEST] Version test "");
+        Console.WriteLine(Environment.Version);
         
-		Print($""[GROUP]"");
+        Print(""[TEST] Path test "");    
+        Print(AppPath.BaseFolder);
+        
+        Print($""[GROUP] Expc tests"");
 
         Print(""[TEST] First test"");
-        Print(""Result for first test"") ; //<-- actual result
-        Print(""[EXPC]Result for first test"") ; //<-- expected result
-
-        Print(""[TEST] Second test"");        
-
-        Print($""[GROUP] {GetType().Name}"");
+        Print(""Result with first\nand second row"") ;  //<--- actual result
+        Print(""[EXPC]Result with first\nand second row"") ;  //<--- expected result
+    
+        Print($""[GROUP] Loop tests"");
 
         for(int i=1; i<5; i++)
             RunTest(i);

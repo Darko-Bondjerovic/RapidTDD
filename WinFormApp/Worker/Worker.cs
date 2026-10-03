@@ -580,27 +580,69 @@ namespace WinFormApp
 
         private Document AddDocument(DocInfo docInfo, ref Solution solution)
         {
-            Document doc;
-
             var source = SourceText.From(docInfo.code);
             var documentId = DocumentId.CreateNewId(project.Id);
 
-            solution = solution.AddDocument(documentId, docInfo.full, source);
+            solution = solution.AddDocument(
+                documentId,
+                Path.GetFileName(docInfo.full),
+                source,
+                filePath: docInfo.full
+            );
 
-            doc = solution.GetDocument(documentId);
-
-            return doc;
+            return solution.GetDocument(documentId);
         }
 
         public void Build(List<DocInfo> docs)
         {
             WriteInfo("Start build...");
 
+            UpdateAppPathCode(docs);
+
             UpdateDocuments(docs);
 
             compilation = Task.Run(() => GetCompilations(project.Documents.ToArray())).Result;
 
             assembly = GetAssembly(compilation);
+        }
+
+        private static void UpdateAppPathCode(List<DocInfo> docs)
+        {
+            foreach (var doc in docs)
+            {
+                var tree = CSharpSyntaxTree.ParseText(doc.code);
+                var root = tree.GetRoot();
+
+                var appPathClass = root.DescendantNodes()
+                    .OfType<ClassDeclarationSyntax>()
+                    .FirstOrDefault(x => x.Identifier.Text == "AppPath");
+
+                if (appPathClass == null)
+                    continue;
+
+                string folder = Path.GetDirectoryName(doc.full);
+
+                if (string.IsNullOrEmpty(folder))
+                    return;
+
+                string newAppPathCode =
+                    "public static class AppPath { public static string BaseFolder { get; set; } = @\""
+                    + folder
+                    + "\"; }";
+
+                var newAppPathClass = CSharpSyntaxTree
+                    .ParseText(newAppPathCode)
+                    .GetRoot()
+                    .DescendantNodes()
+                    .OfType<ClassDeclarationSyntax>()
+                    .First();
+
+                root = root.ReplaceNode(appPathClass, newAppPathClass);
+
+                doc.code = root.ToFullString();
+
+                return;
+            }
         }
 
         private async Task<Compilation> GetCompilations(params Document[] documents)

@@ -614,8 +614,12 @@ namespace WinFormApp
         }
 
         private static DocInfo MakeDocInfo(EditForm edit)
-        {
-            return new DocInfo(edit.TabName, edit.fctb.Text);
+        {       
+            var full = edit.FileName as string;     
+            if (String.IsNullOrEmpty(edit.FileName))
+                full = edit.TabName;    
+            
+            return new DocInfo(full, edit.fctb.Text);            
         }
 
         private void copyActToExpToolStripMenuItem_Click(object sender, EventArgs e)
