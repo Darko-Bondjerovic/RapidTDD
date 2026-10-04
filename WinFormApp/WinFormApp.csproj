@@ -68,6 +68,7 @@
 
   <ItemGroup>  
     <EmbeddedResource Include="Resources\ColorThemes.txt" />
+    <EmbeddedResource Include="Resources\CSharpFormatter.editorconfig" />
     <EmbeddedResource Include="Resources\About.png" />
     <EmbeddedResource Include="TestsView\images\No.png">
       <LogicalName>WinFormApp.TestsView.images.No.png</LogicalName>

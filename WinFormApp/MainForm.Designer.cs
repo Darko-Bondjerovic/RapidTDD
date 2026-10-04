@@ -91,6 +91,7 @@ namespace WinFormApp
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fontDialog = new System.Windows.Forms.FontDialog();
             this.documentMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.formatCodeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -554,6 +555,7 @@ namespace WinFormApp
             // 
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.addReferencesToolStripMenuItem,
+            this.formatCodeToolStripMenuItem,
             this.toolStripSeparator2,
             this.themesToolMenu,
             this.aboutToolStripMenuItem});
@@ -578,6 +580,16 @@ namespace WinFormApp
             this.themesToolMenu.Name = "themesToolMenu";
             this.themesToolMenu.Size = new System.Drawing.Size(153, 22);
             this.themesToolMenu.Text = "Themes";
+
+            // 
+            // formatCodeToolStripMenuItem
+            // 
+            this.formatCodeToolStripMenuItem.Name = "formatCodeToolStripMenuItem";
+            this.formatCodeToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.Alt) 
+            | System.Windows.Forms.Keys.F)));
+            this.formatCodeToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.formatCodeToolStripMenuItem.Text = "Format code";
+            this.formatCodeToolStripMenuItem.Click += new System.EventHandler(this.formatCodeToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
@@ -679,6 +691,7 @@ namespace WinFormApp
         private System.Windows.Forms.ToolStripMenuItem findShiftF2;
         private System.Windows.Forms.ToolStripMenuItem coverageToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem documentMapToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem formatCodeToolStripMenuItem;
     }
 }
 

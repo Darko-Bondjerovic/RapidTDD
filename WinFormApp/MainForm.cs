@@ -501,6 +501,78 @@ namespace WinFormApp
             new AboutForm().ShowDialog();
         }
 
+        private void formatCodeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FormatCurrentCode();
+        }
+
+        private void FormatCurrentCode()
+        {
+            var edit = CurrentEditForm;
+            if (edit == null)
+            {
+                ShowInfoMsgBox("No source code open...");
+                return;
+            }
+
+            string original = edit.fctb.Text;
+            if (string.IsNullOrWhiteSpace(original))
+            {
+                ShowInfoMsgBox("Nothing to format...");
+                return;
+            }
+
+            try
+            {
+                Cursor.Current = Cursors.WaitCursor;
+                WriteInfo("Formatting...");
+
+                // Sacuvaj poziciju
+                int selStart = edit.fctb.SelectionStart;
+                int selLen = edit.fctb.SelectionLength;
+
+                var formatter = new CSharpFormatter();
+                string formatted = formatter.Format(original);
+
+                if (string.IsNullOrWhiteSpace(formatted))
+                {
+                    ShowInfoMsgBox("Formatter returned empty - cancelled.");
+                    return;
+                }
+
+                if (formatted == original)
+                {
+                    WriteInfo("Already formatted.");
+                    return;
+                }
+
+                edit.fctb.Text = formatted;
+
+                // Vrati selekciju sto blize originalu
+                try
+                {
+                    if (selStart <= formatted.Length)
+                    {
+                        edit.fctb.SelectionStart = Math.Min(selStart, formatted.Length);
+                        edit.fctb.SelectionLength = Math.Min(selLen, formatted.Length - edit.fctb.SelectionStart);
+                    }
+                }
+                catch { }
+
+                edit.fctb.DoCaretVisible();
+                WriteInfo("Formatted.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Format failed:\n{ex.Message}", "Format code", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                WriteInfo("Format failed.");
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+        }
+
         private void toolRun_Click(object sender, EventArgs e)
         {
             ExecuteCode();
