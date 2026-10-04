@@ -89,6 +89,7 @@ namespace WinFormApp
 
         public bool DoCoverage = false;
         public HashSet<MarkInfo> CCList = new HashSet<MarkInfo>();
+        private readonly Dictionary<string, (int oldEnd, int delta)> _appPathAdjust = new Dictionary<string, (int, int)>(StringComparer.OrdinalIgnoreCase);
 
         public Worker()
         {
@@ -606,41 +607,24 @@ namespace WinFormApp
             assembly = GetAssembly(compilation);
         }
 
-        private static void UpdateAppPathCode(List<DocInfo> docs)
+                private void UpdateAppPathCode(List<DocInfo> docs)
         {
+            _appPathAdjust.Clear();
             foreach (var doc in docs)
             {
                 var tree = CSharpSyntaxTree.ParseText(doc.code);
                 var root = tree.GetRoot();
-
-                var appPathClass = root.DescendantNodes()
-                    .OfType<ClassDeclarationSyntax>()
-                    .FirstOrDefault(x => x.Identifier.Text == "AppPath");
-
-                if (appPathClass == null)
-                    continue;
-
+                var appPathClass = root.DescendantNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault(x => x.Identifier.Text == "AppPath");
+                if (appPathClass == null) continue;
                 string folder = Path.GetDirectoryName(doc.full);
-
-                if (string.IsNullOrEmpty(folder))
-                    return;
-
-                string newAppPathCode =
-                    "public static class AppPath { public static string BaseFolder { get; set; } = @\""
-                    + folder
-                    + "\"; }";
-
-                var newAppPathClass = CSharpSyntaxTree
-                    .ParseText(newAppPathCode)
-                    .GetRoot()
-                    .DescendantNodes()
-                    .OfType<ClassDeclarationSyntax>()
-                    .First();
-
-                root = root.ReplaceNode(appPathClass, newAppPathClass);
-
+                if (string.IsNullOrEmpty(folder)) continue;
+                int oldEnd = appPathClass.Span.End;
+                int oldLen = appPathClass.Span.Length;
+                string newCode = "public static class AppPath { public static string BaseFolder { get; set; } = @\"" + folder + "\"; }";
+                var newClass = CSharpSyntaxTree.ParseText(newCode).GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>().First();
+                root = root.ReplaceNode(appPathClass, newClass);
                 doc.code = root.ToFullString();
-
+                _appPathAdjust[doc.full] = (oldEnd, newClass.Span.Length - oldLen);
                 return;
             }
         }
@@ -687,21 +671,18 @@ namespace WinFormApp
                         diagnostic.IsWarningAsError
                         || diagnostic.Severity == DiagnosticSeverity.Error
                     );
-
                     var errors = new List<Jump>();
-
                     foreach (Diagnostic fail in failures)
                     {
                         var filePath = "";
                         var loc = fail.Location;
-
-                        if (loc.SourceTree != null)
-                            filePath = loc.SourceTree.FilePath ?? "";
-
-                        errors.Add(
-                            new Jump(
-                                filePath,
-                                loc.SourceSpan.Start,
+                        int spot = loc.SourceSpan.Start;
+                        if (loc.SourceTree != null) filePath = loc.SourceTree.FilePath ?? "";
+                        if (!string.IsNullOrEmpty(filePath) && _appPathAdjust.TryGetValue(filePath, out var adj))
+                        {
+                            if (spot >= adj.oldEnd + adj.delta) spot -= adj.delta;
+                        }
+                        errors.Add(new Jump(filePath, spot,
                                 $"{fail.Id} {fail.GetMessage()}"
                             )
                         );

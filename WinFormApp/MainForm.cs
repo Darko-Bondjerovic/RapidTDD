@@ -181,18 +181,68 @@ namespace WinFormApp
             this.invForm = null;
         }
 
-        public void FindPosInSource(Jump jump)
+                        public void FindPosInSource(Jump jump)
         {
+            if (jump == null) return;
+            string target = jump.File ?? "";
+            string targetShort = System.IO.Path.GetFileName(target);
+            if (string.IsNullOrEmpty(targetShort)) targetShort = target;
+
+            // TabName je jedinstven: "new 1", "error code.cs" - to pise i u error listi
+            // FileName je puna putanja za snimljene fajlove
             foreach(var edit in editors)
             {
-                if (edit.TabName == jump.File)
+                string tab = edit.TabName ?? "";
+                string file = edit.FileName ?? "";
+                
+                bool match = false;
+                // 1. Direktno TabName == target (za nesnimljene "new 1")
+                if (!string.IsNullOrEmpty(tab) && string.Equals(tab, target, StringComparison.OrdinalIgnoreCase)) match = true;
+                // 2. TabName == targetShort (za snimljene: TabName "file.cs" == GetFileName("C:\...ile.cs"))
+                if (!match && !string.IsNullOrEmpty(tab) && !string.IsNullOrEmpty(targetShort) && string.Equals(tab, targetShort, StringComparison.OrdinalIgnoreCase)) match = true;
+                // 3. FileName == target (puna putanja)
+                if (!match && !string.IsNullOrEmpty(file) && string.Equals(file, target, StringComparison.OrdinalIgnoreCase)) match = true;
+                // 4. GetFileName(FileName) == targetShort
+                if (!match && !string.IsNullOrEmpty(file) && !string.IsNullOrEmpty(targetShort) && string.Equals(System.IO.Path.GetFileName(file), targetShort, StringComparison.OrdinalIgnoreCase)) match = true;
+
+                if (match)
                 {
                     edit.Activate();
-                    edit.fctb.SelectionStart = jump.Spot;
+                    try
+                    {
+                        int spot = jump.Spot;
+                        if (spot < 0) spot = 0;
+                        if (spot > edit.fctb.TextLength) spot = edit.fctb.TextLength;
+                        // FastColoredTextBox: SelectionStart je apsolutni offset u Text-u (broj karaktera od pocetka)
+                        edit.fctb.SelectionStart = spot;
+                        edit.fctb.SelectionLength = 0;
+                        edit.fctb.DoCaretVisible();
+                        edit.fctb.DoSelectionVisible();
+                        edit.fctb.Focus();
+                        edit.fctb.Navigate(spot);
+                    }
+                    catch { edit.fctb.Focus(); }
+                    return;
+                }
+            }
+            
+            // Fallback: ako nista nije nadjeno (npr. FilePath prazan), skoci u aktivni editor
+            if (editors.Count > 0)
+            {
+                var active = this.dockpanel.ActiveDocument as EditForm;
+                var edit = active ?? editors[0];
+                edit.Activate();
+                try
+                {
+                    int spot = jump.Spot;
+                    if (spot < 0) spot = 0;
+                    if (spot > edit.fctb.TextLength) spot = edit.fctb.TextLength;
+                    edit.fctb.SelectionStart = spot;
+                    edit.fctb.SelectionLength = 0;
                     edit.fctb.DoCaretVisible();
                     edit.fctb.Focus();
-                    break;
                 }
+                catch {}
             }
         }
 
@@ -619,7 +669,8 @@ namespace WinFormApp
                 }    
 
                 ShowResponseToUI(response, HadCompileErorrs);
-                DisplayErrors(null);
+                if (!HadCompileErorrs)
+                    DisplayErrors(null);
             }
             finally
             {
@@ -650,21 +701,20 @@ namespace WinFormApp
             }
         }
 
-        private void DisplayErrors(object errobj)
+                        private void DisplayErrors(object errobj)
         {
-            if (errForm != null)
-                if (!HadCompileErorrs)
-                {
-                    errForm.DockState = DockState.DockBottomAutoHide;
-                    //errForm.textBox.Text = "";
-                }
-
-            if (errobj != null)
+            if (errobj == null)
             {
-                MakeErrorForm();
-                errForm.DockState = DockState.DockBottom;
-                errForm.ShowErrors(errobj);
+                if (errForm != null)
+                {
+                    errForm.ClearErrors();
+                    errForm.DockState = DockState.DockBottomAutoHide;
+                }
+                return;
             }
+            MakeErrorForm();
+            errForm.DockState = DockState.DockBottom;
+            errForm.ShowErrors(errobj);
         }
 
         private void ShowResponseToUI(string response, bool err)
